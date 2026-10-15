@@ -1,0 +1,3289 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
+    <meta name="theme-color" content="#07080c" id="metaThemeColor">
+    <title>Vyro - Next-Gen Video Streaming Platform</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        vyro: {
+                            950: '#07080c',
+                            900: '#0d0f17',
+                            800: '#161926',
+                            700: '#22273a',
+                            600: '#353c59',
+                            accent: '#6366f1',
+                            accentHover: '#4f46e5',
+                            cyan: '#06b6d4',
+                            rose: '#f43f5e'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        html {
+            /* Fluid root font sizing that scales smoothly from 320px phones to 4K PC monitors */
+            font-size: clamp(14px, 0.85rem + 0.18vw, 16.5px);
+            -webkit-text-size-adjust: 100%;
+            text-rendering: optimizeLegibility;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        body {
+            background-color: #07080c;
+            color: #f3f4f6;
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+            min-height: 100vh;
+            min-height: 100dvh;
+            transition: background-color 0.25s ease, color 0.25s ease;
+        }
+        canvas {
+            image-rendering: -webkit-optimize-contrast;
+            image-rendering: high-quality;
+            image-rendering: crisp-edges;
+            display: block;
+        }
+        svg {
+            shape-rendering: geometricPrecision;
+        }
+        /* Fluid mobile & desktop viewport sizing for Vyro Pulse */
+        #pulseViewport {
+            height: min(72dvh, 640px);
+            width: auto;
+            aspect-ratio: 9 / 16;
+            max-width: 90vw;
+        }
+
+        /* ==========================================================================
+           LIGHT MODE THEME OVERRIDES (Adaptive High-Contrast Daylight Palette)
+           ========================================================================== */
+        html.light body {
+            background-color: #f8fafc;
+            color: #0f172a;
+        }
+        html.light .bg-vyro-950 { background-color: #f8fafc !important; }
+        html.light .bg-vyro-950\/85 { background-color: rgba(248, 250, 252, 0.88) !important; }
+        html.light .bg-vyro-950\/90 { background-color: rgba(248, 250, 252, 0.92) !important; }
+        html.light .bg-vyro-950\/95 { background-color: rgba(255, 255, 255, 0.96) !important; }
+        html.light .bg-vyro-900 { background-color: #ffffff !important; }
+        html.light .bg-vyro-900\/90 { background-color: rgba(255, 255, 255, 0.94) !important; }
+        html.light .bg-vyro-900\/50 { background-color: #f1f5f9 !important; }
+        html.light .bg-vyro-800 { background-color: #f1f5f9 !important; }
+        html.light .bg-vyro-800\/95 { background-color: rgba(255, 255, 255, 0.96) !important; }
+        html.light .hover\:bg-vyro-900:hover { background-color: #f1f5f9 !important; }
+        html.light .hover\:bg-vyro-800:hover { background-color: #e2e8f0 !important; }
+        html.light .hover\:bg-vyro-700:hover { background-color: #cbd5e1 !important; }
+
+        html.light .border-vyro-800,
+        html.light .border-vyro-800\/80,
+        html.light .border-vyro-800\/60,
+        html.light .border-vyro-800\/50,
+        html.light .border-vyro-800\/90 {
+            border-color: #e2e8f0 !important;
+        }
+        html.light .border-vyro-700,
+        html.light .border-vyro-700\/80,
+        html.light .border-vyro-700\/60 {
+            border-color: #cbd5e1 !important;
+        }
+        html.light .divide-vyro-800\/60 > :not([hidden]) ~ :not([hidden]) {
+            border-color: #e2e8f0 !important;
+        }
+
+        html.light .text-white { color: #0f172a !important; }
+        html.light .text-gray-100 { color: #0f172a !important; }
+        html.light .text-gray-200 { color: #1e293b !important; }
+        html.light .text-gray-300 { color: #334155 !important; }
+        html.light .text-gray-400 { color: #475569 !important; }
+        html.light .text-gray-500 { color: #64748b !important; }
+
+        /* Preserve pure white text on vibrant badges, video overlays, and primary buttons */
+        html.light .keep-white,
+        html.light .keep-white * {
+            color: #ffffff !important;
+        }
+        html.light #feedBanner {
+            background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 50%, #e0e7ff 100%) !important;
+        }
+
+        /* Custom subtle scrollbars */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #353c59;
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #6366f1;
+        }
+
+        /* Hide scrollbars for horizontal category pill strips */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* Custom Video Scrubber Range Input */
+        input[type=range].vyro-slider {
+            -webkit-appearance: none;
+            appearance: none;
+            background: rgba(255, 255, 255, 0.25);
+            height: 5px;
+            border-radius: 999px;
+            cursor: pointer;
+            width: 100%;
+            transition: height 0.15s ease;
+        }
+        input[type=range].vyro-slider:hover {
+            height: 7px;
+        }
+        input[type=range].vyro-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: #6366f1;
+            border: 2px solid #ffffff;
+            box-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+            cursor: pointer;
+        }
+
+        /* Line clamp utilities */
+        .line-clamp-2 {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        /* Ambient glow transition behind the main player */
+        #playerAmbientContainer {
+            transition: box-shadow 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        /* ==========================================================================
+           ULTRA-ANIMATED SPLASH SCREEN & PULSE SWIPE PHYSICS ANIMATIONS
+           ========================================================================== */
+        @keyframes spinSlow {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        @keyframes spinReverse {
+            from { transform: rotate(360deg); }
+            to { transform: rotate(0deg); }
+        }
+        @keyframes logoDraw {
+            0% { stroke-dashoffset: 240; filter: drop-shadow(0 0 0px rgba(99, 102, 241, 0)); }
+            60% { stroke-dashoffset: 0; filter: drop-shadow(0 0 18px rgba(99, 102, 241, 0.9)); }
+            100% { stroke-dashoffset: 0; filter: drop-shadow(0 0 26px rgba(6, 182, 212, 0.95)); }
+        }
+        @keyframes scanBeam {
+            0% { transform: translateY(-100%); opacity: 0; }
+            50% { opacity: 0.5; }
+            100% { transform: translateY(1000%); opacity: 0; }
+        }
+        @keyframes swipeHintFloat {
+            0%, 100% { transform: translateY(0); opacity: 0.75; }
+            50% { transform: translateY(-7px); opacity: 1; }
+        }
+        .splash-ring-1 { animation: spinSlow 10s linear infinite; }
+        .splash-ring-2 { animation: spinReverse 6s linear infinite; }
+        .splash-v-path {
+            stroke-dasharray: 240;
+            stroke-dashoffset: 240;
+            animation: logoDraw 0.95s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        .splash-scanline {
+            animation: scanBeam 2.6s linear infinite;
+        }
+        .swipe-float-hint {
+            animation: swipeHintFloat 2s ease-in-out infinite;
+        }
+        #vyroSplashScreen {
+            transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1), transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        #vyroSplashScreen.splash-dismiss {
+            opacity: 0;
+            transform: scale(1.04);
+            pointer-events: none;
+        }
+        #pulseCardWrapper {
+            touch-action: none;
+            will-change: transform, opacity;
+        }
+        @keyframes heartPop {
+            0% { transform: scale(0.3) rotate(-12deg); opacity: 1; }
+            50% { transform: scale(1.25) rotate(6deg); opacity: 1; }
+            100% { transform: scale(1.55) translateY(-28px); opacity: 0; }
+        }
+        .pulse-heart-burst {
+            animation: heartPop 0.65s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        /* Smooth Card Lift & Tactile Button Physics */
+        .vyro-card-lift {
+            transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .vyro-card-lift:hover {
+            transform: translateY(-4px);
+        }
+        button:active {
+            transform: scale(0.96);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col bg-vyro-950 text-gray-100 antialiased selection:bg-vyro-accent selection:text-white">
+
+    <!-- Ultra-Animated Futuristic Boot Splash Screen -->
+    <div id="vyroSplashScreen" class="keep-white fixed inset-0 z-[100] bg-[#05060a] flex flex-col items-center justify-center overflow-hidden select-none">
+        <!-- Ambient Radial Energy Backdrops -->
+        <div class="absolute w-[520px] h-[520px] rounded-full bg-vyro-accent/20 blur-[130px] pointer-events-none"></div>
+        <div class="absolute w-[360px] h-[360px] rounded-full bg-vyro-cyan/15 blur-[100px] translate-x-24 -translate-y-16 pointer-events-none"></div>
+
+        <!-- Subtle Perspective Cyber Grid & Scanbeam -->
+        <div class="absolute inset-0 opacity-20 pointer-events-none"
+             style="background-image: linear-gradient(to right, #1e293b 1px, transparent 1px), linear-gradient(to bottom, #1e293b 1px, transparent 1px); background-size: 44px 44px;">
+        </div>
+        <div class="splash-scanline absolute top-0 inset-x-0 h-20 bg-gradient-to-b from-transparent via-vyro-cyan/15 to-transparent pointer-events-none"></div>
+
+        <!-- Core Animated Orbital Emblem -->
+        <div class="relative z-10 flex flex-col items-center">
+            <div class="relative w-36 h-36 sm:w-44 sm:h-44 flex items-center justify-center mb-7">
+                <!-- Outer Segmented Telemetry Ring -->
+                <svg class="splash-ring-1 absolute inset-0 w-full h-full text-vyro-accent/40" viewBox="0 0 200 200">
+                    <circle cx="100" cy="100" r="90" fill="none" stroke="currentColor" stroke-width="1.5" stroke-dasharray="14 8 4 8" />
+                    <circle cx="100" cy="100" r="78" fill="none" stroke="#06b6d4" stroke-width="1" stroke-opacity="0.3" stroke-dasharray="40 20" />
+                </svg>
+
+                <!-- Inner Counter-Rotating Reactor Ring -->
+                <svg class="splash-ring-2 absolute inset-3 w-[calc(100%-24px)] h-[calc(100%-24px)] text-vyro-cyan/70" viewBox="0 0 200 200">
+                    <circle cx="100" cy="100" r="76" fill="none" stroke="currentColor" stroke-width="2.5" stroke-dasharray="28 45" stroke-linecap="round" />
+                </svg>
+
+                <!-- CenterGlowing Core & Kinetic Vector "V" -->
+                <div class="relative w-24 h-24 sm:w-28 sm:h-28 rounded-3xl bg-gradient-to-b from-[#121629] to-[#080a12] border border-white/15 shadow-2xl flex items-center justify-center">
+                    <svg class="w-14 h-14 sm:w-16 sm:h-16" viewBox="0 0 64 64" fill="none">
+                        <defs>
+                            <linearGradient id="splashVGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#6366f1" />
+                                <stop offset="50%" stop-color="#8b5cf6" />
+                                <stop offset="100%" stop-color="#06b6d4" />
+                            </linearGradient>
+                        </defs>
+                        <path class="splash-v-path" d="M12 14L32 52L52 14" stroke="url(#splashVGrad)" stroke-width="6.5" stroke-linecap="round" stroke-linejoin="round" />
+                        <path class="splash-v-path" d="M23 14L32 32L41 14" stroke="#ffffff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="animation-delay: 0.25s;" />
+                    </svg>
+                </div>
+            </div>
+
+            <!-- Brand Typography & Engine Tag -->
+            <div class="flex items-center gap-2.5 tracking-tight">
+                <span class="text-3xl sm:text-5xl font-black tracking-[0.22em] text-white">VYRO</span>
+                <span class="px-2 py-0.5 rounded-md bg-vyro-accent/20 border border-vyro-accent/50 text-[11px] font-mono font-bold text-vyro-cyan">OS 4.0</span>
+            </div>
+            <p class="mt-2 text-xs sm:text-sm font-medium tracking-widest uppercase text-gray-400">Next-Gen 4K Retina Streaming Engine</p>
+
+            <!-- Real-Time Progress Bar & Telemetry Status -->
+            <div class="mt-8 w-64 sm:w-80 space-y-2.5">
+                <div class="h-1.5 w-full rounded-full bg-white/10 overflow-hidden p-0.5">
+                    <div id="splashProgressBar" class="h-full w-0 rounded-full bg-gradient-to-r from-vyro-accent via-indigo-400 to-vyro-cyan transition-all duration-100"></div>
+                </div>
+                <div class="flex items-center justify-between text-[11px] font-mono">
+                    <span id="splashStatusText" class="text-vyro-cyan truncate">INITIALIZING WEBGPU SHADERS...</span>
+                    <span id="splashPercentText" class="text-gray-300 font-bold">0%</span>
+                </div>
+            </div>
+
+            <!-- Instant Skip Trigger -->
+            <button onclick="app.dismissSplash()" class="mt-7 px-4 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-[11px] font-semibold tracking-wider uppercase text-gray-400 hover:text-white transition-all">
+                Enter Platform Now
+            </button>
+        </div>
+    </div>
+
+    <header class="sticky top-0 z-40 h-16 w-full bg-vyro-950/85 backdrop-blur-xl border-b border-vyro-800 px-3 sm:px-6 flex items-center justify-between gap-2 sm:gap-4">
+        <!-- Left: Sidebar Toggle & Brand Logo -->
+        <div class="flex items-center gap-2 sm:gap-4 flex-shrink-0">
+            <button id="sidebarToggleBtn" aria-label="Toggle Menu" class="p-2 rounded-xl hover:bg-vyro-800 text-gray-300 hover:text-white transition-colors">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h10"/>
+                </svg>
+            </button>
+            <a href="#" onclick="app.navigate('home'); return false;" class="flex items-center gap-2 sm:gap-2.5 group">
+                <div class="keep-white w-9 h-9 rounded-xl bg-gradient-to-tr from-vyro-accent via-indigo-500 to-vyro-cyan flex items-center justify-center shadow-lg shadow-vyro-accent/25 group-hover:scale-105 transition-transform">
+                    <svg class="w-5 h-5 text-white" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M4 4.5A1.5 1.5 0 015.5 3h3.8a1.5 1.5 0 011.34.83L14 10.6l3.36-6.77A1.5 1.5 0 0118.7 3h.8A1.5 1.5 0 0120.84 5.17l-7.5 15a1.5 1.5 0 01-2.68 0l-6.5-13A1.5 1.5 0 014 4.5z"/>
+                    </svg>
+                </div>
+                <div class="flex items-baseline gap-1">
+                    <span class="text-lg sm:text-xl font-extrabold tracking-tight text-white">VYRO</span>
+                    <span class="hidden sm:inline-block text-[10px] font-semibold uppercase tracking-widest px-1.5 py-0.5 rounded bg-vyro-800 text-vyro-cyan border border-vyro-700">4K</span>
+                </div>
+            </a>
+        </div>
+
+        <!-- Center: Search Bar & Filter Trigger -->
+        <div class="flex-1 max-w-2xl mx-1 sm:mx-6 relative">
+            <div class="flex items-center w-full bg-vyro-900 border border-vyro-700/80 focus-within:border-vyro-accent focus-within:ring-2 focus-within:ring-vyro-accent/25 rounded-2xl overflow-hidden transition-all">
+                <div class="pl-3 sm:pl-4 pr-1.5 sm:pr-2 text-gray-400">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 103.5 10.5a7.5 7.5 0 0013.15 6.15z"/>
+                    </svg>
+                </div>
+                <input id="searchInput" type="text" placeholder="Search streams, creators, topics..." 
+                    class="w-full py-2 sm:py-2.5 pr-2 bg-transparent text-xs sm:text-sm text-gray-100 placeholder-gray-500 focus:outline-none">
+                <button id="clearSearchBtn" class="hidden pr-2 sm:pr-3 text-gray-400 hover:text-white" title="Clear Search">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+                <button id="searchBtn" class="hidden sm:block px-4 py-2.5 bg-vyro-800 hover:bg-vyro-700 text-gray-300 hover:text-white border-l border-vyro-700 text-xs font-medium transition-colors">
+                    Search
+                </button>
+            </div>
+            <!-- Live Search Suggestions Dropdown -->
+            <div id="searchDropdown" class="hidden absolute left-0 right-0 top-12 bg-vyro-900 border border-vyro-700 rounded-2xl shadow-2xl overflow-hidden z-50">
+            </div>
+        </div>
+
+        <!-- Right: Actions (Theme Toggle, Upload, Notifications, Profile) -->
+        <div class="flex items-center gap-1.5 sm:gap-2.5 flex-shrink-0">
+            <!-- Light / Dark Theme Switcher -->
+            <button id="themeToggleBtn" onclick="app.toggleTheme()" title="Switch Light / Dark Mode" aria-label="Toggle Theme"
+                class="p-2 sm:p-2.5 rounded-xl bg-vyro-900 hover:bg-vyro-800 border border-vyro-800 text-gray-300 hover:text-white transition-colors">
+                <!-- Sun Icon (shown in dark mode) -->
+                <svg id="themeSunIcon" class="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
+                </svg>
+                <!-- Moon Icon (shown in light mode) -->
+                <svg id="themeMoonIcon" class="w-5 h-5 text-indigo-600 hidden" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
+                </svg>
+            </button>
+
+            <button onclick="app.openUploadModal()" class="keep-white hidden sm:flex items-center gap-2 px-3.5 py-2 rounded-xl bg-gradient-to-r from-vyro-accent to-indigo-600 hover:from-vyro-accentHover hover:to-indigo-500 text-white font-medium text-xs sm:text-sm shadow-lg shadow-vyro-accent/20 transition-all">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+                </svg>
+                <span class="hidden md:inline">Publish</span>
+            </button>
+
+            <div class="relative">
+                <button id="notifBtn" onclick="app.toggleNotifications()" class="p-2 sm:p-2.5 rounded-xl bg-vyro-900 hover:bg-vyro-800 border border-vyro-800 text-gray-300 hover:text-white transition-colors relative">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+                    </svg>
+                    <span id="notifBadge" class="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-vyro-rose ring-2 ring-vyro-950"></span>
+                </button>
+                <!-- Notifications Panel -->
+                <div id="notifDropdown" class="hidden absolute right-0 mt-2 w-72 sm:w-80 bg-vyro-900 border border-vyro-700 rounded-2xl shadow-2xl z-50 overflow-hidden">
+                    <div class="px-4 py-3 border-b border-vyro-800 flex items-center justify-between">
+                        <span class="text-xs font-bold uppercase tracking-wider text-gray-300">Activity Feed</span>
+                        <button onclick="app.markNotificationsRead()" class="text-xs text-vyro-accent hover:underline">Mark read</button>
+                    </div>
+                    <div id="notifList" class="max-h-80 overflow-y-auto divide-y divide-vyro-800/60"></div>
+                </div>
+            </div>
+
+            <button onclick="app.navigate('studio')" title="Creator Studio" class="flex items-center gap-2 p-1 sm:pr-2.5 rounded-xl bg-vyro-900 hover:bg-vyro-800 border border-vyro-800 transition-colors">
+                <div class="keep-white w-7 h-7 rounded-lg bg-gradient-to-br from-vyro-cyan to-vyro-accent flex items-center justify-center text-xs font-bold text-white">
+                    AK
+                </div>
+                <span class="hidden lg:inline text-xs font-medium text-gray-200">Studio</span>
+            </button>
+        </div>
+    </header>
+
+    <div class="flex-1 flex overflow-hidden relative">
+        <!-- Mobile Sidebar Backdrop -->
+        <div id="sidebarBackdrop" onclick="app.closeMobileSidebar()" class="hidden md:hidden fixed inset-0 top-16 bg-black/60 backdrop-blur-sm z-20"></div>
+
+        <!-- Left Navigation Sidebar -->
+        <aside id="sidebar" class="w-64 md:w-60 bg-vyro-950 border-r border-vyro-800/80 flex-shrink-0 hidden md:flex flex-col justify-between overflow-y-auto transition-all duration-200 select-none z-30">
+            <div class="p-3 space-y-6">
+                <!-- Primary Navigation -->
+                <nav class="space-y-1" id="primaryNav">
+                    <button data-nav="home" onclick="app.navigate('home')" class="nav-item w-full flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all">
+                        <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l9-9 9 9M5 10v10a1 1 0 001 1h3a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1h3a1 1 0 001-1V10"/>
+                        </svg>
+                        <span class="nav-label">Home Feed</span>
+                    </button>
+
+                    <button data-nav="pulse" onclick="app.navigate('pulse')" class="nav-item w-full flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all">
+                        <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                        </svg>
+                        <span class="nav-label">Vyro Pulse</span>
+                        <span class="nav-badge ml-auto text-[10px] font-bold px-1.5 py-0.5 rounded bg-vyro-rose/20 text-vyro-rose">SHORTS</span>
+                    </button>
+
+                    <button data-nav="subscriptions" onclick="app.navigate('subscriptions')" class="nav-item w-full flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all">
+                        <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+                        </svg>
+                        <span class="nav-label">Subscriptions</span>
+                    </button>
+                </nav>
+
+                <!-- Personal Library -->
+                <div class="pt-4 border-t border-vyro-800/80 space-y-1">
+                    <p class="nav-section-title px-3.5 pb-1.5 text-[11px] font-bold uppercase tracking-wider text-gray-500">Your Vault</p>
+                    <button data-nav="history" onclick="app.navigate('history')" class="nav-item w-full flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all">
+                        <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        <span class="nav-label">Watch History</span>
+                    </button>
+
+                    <button data-nav="watchlater" onclick="app.navigate('watchlater')" class="nav-item w-full flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all">
+                        <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/>
+                        </svg>
+                        <span class="nav-label">Saved Queue</span>
+                        <span id="savedCountBadge" class="nav-badge ml-auto text-xs text-gray-400">0</span>
+                    </button>
+
+                    <button data-nav="liked" onclick="app.navigate('liked')" class="nav-item w-full flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all">
+                        <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5"/>
+                        </svg>
+                        <span class="nav-label">Liked Videos</span>
+                    </button>
+
+                    <button data-nav="studio" onclick="app.navigate('studio')" class="nav-item w-full flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all">
+                        <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                        </svg>
+                        <span class="nav-label">Creator Studio</span>
+                    </button>
+                </div>
+
+                <!-- Subscribed Channels List -->
+                <div id="sidebarSubsContainer" class="pt-4 border-t border-vyro-800/80 space-y-2">
+                    <p class="nav-section-title px-3.5 text-[11px] font-bold uppercase tracking-wider text-gray-500">Following</p>
+                    <div id="sidebarSubsList" class="space-y-1"></div>
+                </div>
+            </div>
+
+            <!-- Footer Info -->
+            <div id="sidebarFooter" class="p-4 border-t border-vyro-800/60 text-[11px] text-gray-500 space-y-1">
+                <div class="flex items-center justify-between">
+                    <p class="font-semibold text-gray-400">Vyro Engine v2.5</p>
+                    <span id="dpiStatusBadge" class="px-1.5 py-0.5 rounded bg-vyro-800 text-[10px] font-mono text-vyro-cyan">1x DPI</span>
+                </div>
+                <p id="dpiResolutionSub" class="font-mono text-[10px] text-gray-500">Calibrating Display...</p>
+            </div>
+        </aside>
+
+        <!-- Main Dynamic Content Container -->
+        <main id="mainContainer" class="flex-1 overflow-y-auto pb-20 md:pb-10">
+            
+            <section id="view-home" class="p-3.5 sm:p-6 max-w-[1920px] mx-auto space-y-6">
+                <!-- Category Filter Bar -->
+                <div class="sticky top-0 z-20 bg-vyro-950/90 backdrop-blur-md py-2.5 -mx-3.5 px-3.5 sm:-mx-6 sm:px-6 border-b border-vyro-800/50 flex items-center justify-between gap-4">
+                    <div id="categoryBar" class="flex items-center gap-2 overflow-x-auto no-scrollbar"></div>
+                    <div class="hidden lg:flex items-center gap-2 flex-shrink-0">
+                        <span class="text-xs text-gray-400">Sort:</span>
+                        <select id="sortSelect" onchange="app.setSort(this.value)" class="bg-vyro-900 border border-vyro-700 rounded-xl px-3 py-1.5 text-xs text-gray-200 focus:outline-none focus:border-vyro-accent">
+                            <option value="trending">Trending First</option>
+                            <option value="newest">Newest Uploads</option>
+                            <option value="views">Most Viewed</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Featured Spotlight Stream Hero Banner (Visible on Main Home Feed) -->
+                <div id="heroSpotlight" class="keep-white relative rounded-3xl overflow-hidden border border-vyro-700/70 bg-gradient-to-br from-[#0e1224] via-[#131836] to-[#080a14] shadow-2xl">
+                    <div class="absolute -right-20 -top-20 w-96 h-96 rounded-full bg-vyro-accent/25 blur-[100px] pointer-events-none"></div>
+                    <div class="absolute left-1/3 -bottom-24 w-80 h-80 rounded-full bg-vyro-cyan/20 blur-[90px] pointer-events-none"></div>
+                    <div class="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-6 p-5 sm:p-8 items-center">
+                        <div class="lg:col-span-7 space-y-3.5">
+                            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-vyro-accent/25 border border-vyro-accent/50 text-xs font-bold tracking-wide text-vyro-cyan">
+                                <span class="w-2 h-2 rounded-full bg-vyro-rose animate-ping"></span>
+                                <span>FEATURED PREMIERE STREAM</span>
+                            </div>
+                            <h2 id="heroTitle" class="text-xl sm:text-3xl lg:text-4xl font-extrabold text-white leading-tight tracking-tight">
+                                Architecting a Zero-Latency Distributed Video Engine in Rust &amp; WebGPU
+                            </h2>
+                            <p id="heroDesc" class="text-xs sm:text-sm text-gray-300 max-w-2xl line-clamp-2 leading-relaxed">
+                                Experience real HD hardware-accelerated video streaming combined with interactive chapter markers, ambient theater lighting, and zero-latency playback controls.
+                            </p>
+                            <div class="flex flex-wrap items-center gap-3 pt-1">
+                                <button onclick="app.watchVideo('vyro-101')" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-vyro-accent to-indigo-500 hover:from-vyro-accentHover hover:to-indigo-600 text-white font-bold text-xs sm:text-sm shadow-lg shadow-vyro-accent/30 flex items-center gap-2 transition-all">
+                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                                    <span>Watch Featured Stream</span>
+                                </button>
+                                <button onclick="app.navigate('pulse')" class="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 border border-white/15 text-white font-semibold text-xs sm:text-sm flex items-center gap-2 transition-all">
+                                    <svg class="w-4 h-4 text-vyro-rose" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                                    <span>Open Vyro Pulse Shorts</span>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="lg:col-span-5">
+                            <div onclick="app.watchVideo('vyro-101')" class="group relative aspect-video rounded-2xl overflow-hidden border border-white/15 shadow-2xl cursor-pointer">
+                                <div id="heroPreviewArt" class="w-full h-full"></div>
+                                <div class="absolute inset-0 bg-black/30 group-hover:bg-black/10 transition-colors flex items-center justify-center">
+                                    <div class="w-14 h-14 rounded-full bg-vyro-accent/95 text-white flex items-center justify-center shadow-xl group-hover:scale-110 transition-transform">
+                                        <svg class="w-6 h-6 translate-x-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                                    </div>
+                                </div>
+                                <span class="absolute bottom-3 right-3 px-2.5 py-1 rounded-lg bg-black/80 text-[11px] font-mono font-bold text-vyro-cyan border border-white/10">
+                                    REAL HD STREAM + SYNTH
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dynamic Section Header (Used when viewing History, Liked, etc.) -->
+                <div id="feedBanner" class="hidden rounded-2xl bg-gradient-to-r from-vyro-900 via-vyro-800 to-vyro-900 border border-vyro-700/60 p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                        <h1 id="feedBannerTitle" class="text-2xl font-bold text-white">Section Title</h1>
+                        <p id="feedBannerSub" class="text-sm text-gray-400 mt-1">Subtitle description</p>
+                    </div>
+                    <div id="feedBannerActions"></div>
+                </div>
+
+                <!-- Video Cards Grid -->
+                <div id="videoGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-x-5 gap-y-8"></div>
+            </section>
+
+            <section id="view-watch" class="hidden p-3 sm:p-6 max-w-[1800px] mx-auto">
+                <div id="watchLayout" class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    <!-- Primary Player Column -->
+                    <div id="playerColumn" class="lg:col-span-8 space-y-4">
+                        <!-- Video Player Wrapper with Ambient Glow -->
+                        <div id="playerAmbientContainer" class="keep-white relative rounded-2xl overflow-hidden bg-black border border-vyro-800 shadow-2xl group aspect-video select-none">
+                            <!-- Procedural HTML5 Canvas Visualizer + Real HD Video Element -->
+                            <canvas id="vyroCanvasPlayer" class="w-full h-full block cursor-pointer"></canvas>
+                            <video id="vyroRealVideo" class="w-full h-full object-cover hidden cursor-pointer" crossorigin="anonymous" playsinline preload="auto"></video>
+
+                            <!-- Double-Tap Seek Left/Right Ripple Indicators -->
+                            <div id="seekRippleLeft" class="pointer-events-none absolute inset-y-0 left-0 w-1/3 bg-white/10 backdrop-blur-xs rounded-r-full flex flex-col items-center justify-center opacity-0 transition-opacity duration-200">
+                                <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12.066 11.2a1 1 0 000 1.6l5.334 4A1 1 0 0019 16V8a1 1 0 00-1.6-.8l-5.333 4zM4.066 11.2a1 1 0 000 1.6l5.334 4A1 1 0 0011 16V8a1 1 0 00-1.6-.8l-5.334 4z"/></svg>
+                                <span class="text-xs font-bold text-white mt-1">-10s</span>
+                            </div>
+                            <div id="seekRippleRight" class="pointer-events-none absolute inset-y-0 right-0 w-1/3 bg-white/10 backdrop-blur-xs rounded-l-full flex flex-col items-center justify-center opacity-0 transition-opacity duration-200">
+                                <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11.933 12.8a1 1 0 000-1.6L6.6 7.2A1 1 0 005 8v8a1 1 0 001.6.8l5.333-4zM19.933 12.8a1 1 0 000-1.6l-5.333-4A1 1 0 0013 8v8a1 1 0 001.6.8l5.333-4z"/></svg>
+                                <span class="text-xs font-bold text-white mt-1">+10s</span>
+                            </div>
+
+                            <!-- Top Player Overlay (Chapter Info, Real HD vs Synth Toggle & Ambient Toggle) -->
+                            <div id="playerTopBar" class="absolute top-0 inset-x-0 p-3 sm:p-4 bg-gradient-to-b from-black/85 via-black/40 to-transparent opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-between pointer-events-none">
+                                <div class="flex items-center gap-2 min-w-0">
+                                    <span id="playerDpiBadge" class="px-2 py-0.5 rounded bg-vyro-accent/90 text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-white flex-shrink-0">HD STREAM</span>
+                                    <span id="playerOverlayTitle" class="text-xs sm:text-sm font-semibold text-white truncate max-w-[150px] sm:max-w-md"></span>
+                                </div>
+                                <div class="flex items-center gap-1.5 sm:gap-2 pointer-events-auto flex-shrink-0">
+                                    <button onclick="player.toggleVisualEngine()" id="engineModeBtn" class="px-2.5 py-1 rounded-lg bg-black/65 hover:bg-black/85 border border-white/15 text-[11px] sm:text-xs font-semibold text-vyro-cyan flex items-center gap-1.5 transition-colors" title="Switch between Real HD Video and 4K Procedural Shader">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                                        <span id="engineModeLabel">Mode: Real HD</span>
+                                    </button>
+                                    <button onclick="player.toggleAmbient()" id="ambientBtn" class="px-2.5 py-1 rounded-lg bg-black/65 hover:bg-black/85 border border-white/15 text-[11px] sm:text-xs font-medium text-gray-200 flex items-center gap-1.5">
+                                        <span class="w-2 h-2 rounded-full bg-vyro-cyan" id="ambientDot"></span>
+                                        <span class="hidden sm:inline">Ambient</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Center Play/Pause Ripple Indicator -->
+                            <button onclick="player.togglePlay()" id="centerPlayOverlay" class="absolute inset-0 m-auto w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-vyro-accent/90 text-white flex items-center justify-center shadow-2xl transform scale-90 opacity-0 pointer-events-none transition-all duration-200">
+                                <svg class="w-7 h-7 sm:w-8 sm:h-8 translate-x-0.5" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M8 5v14l11-7z"/>
+                                </svg>
+                            </button>
+
+                            <!-- Bottom Custom Player Controls -->
+                            <div id="playerBottomBar" class="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/95 via-black/70 to-transparent pt-6 sm:pt-8 pb-2.5 sm:pb-3 px-3 sm:px-4 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                                <!-- Timeline Scrubber -->
+                                <div class="relative flex items-center mb-2">
+                                    <input id="playerScrubber" type="range" min="0" max="100" value="0" step="0.1" class="vyro-slider">
+                                </div>
+
+                                <div class="flex items-center justify-between gap-2 sm:gap-4">
+                                    <!-- Left Controls: Play, Next, Volume, Time -->
+                                    <div class="flex items-center gap-2 sm:gap-3">
+                                        <button onclick="player.togglePlay()" class="p-1.5 rounded-lg hover:bg-white/10 text-white transition-colors" title="Play/Pause (Space)">
+                                            <svg id="playIcon" class="w-5 h-5 sm:w-6 sm:h-6" fill="currentColor" viewBox="0 0 24 24">
+                                                <path d="M8 5v14l11-7z"/>
+                                            </svg>
+                                            <svg id="pauseIcon" class="w-5 h-5 sm:w-6 sm:h-6 hidden" fill="currentColor" viewBox="0 0 24 24">
+                                                <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+                                            </svg>
+                                        </button>
+
+                                        <button onclick="player.playNextRecommended()" class="p-1.5 rounded-lg hover:bg-white/10 text-gray-200 hover:text-white transition-colors" title="Next Video">
+                                            <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="currentColor" viewBox="0 0 24 24">
+                                                <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/>
+                                            </svg>
+                                        </button>
+
+                                        <!-- Volume Control -->
+                                        <div class="flex items-center gap-1.5 sm:gap-2 group/vol">
+                                            <button onclick="player.toggleMute()" class="p-1.5 rounded-lg hover:bg-white/10 text-gray-200 hover:text-white transition-colors" title="Mute (M)">
+                                                <svg id="volHighIcon" class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/>
+                                                </svg>
+                                                <svg id="volMuteIcon" class="w-4 h-4 sm:w-5 sm:h-5 hidden text-vyro-rose" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15zM17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2"/>
+                                                </svg>
+                                            </button>
+                                            <input id="volumeSlider" type="range" min="0" max="1" step="0.05" value="0.7" class="hidden sm:block w-16 sm:w-20 vyro-slider">
+                                        </div>
+
+                                        <div class="text-[11px] sm:text-xs font-mono text-gray-300">
+                                            <span id="currentTimeLabel">0:00</span>
+                                            <span class="text-gray-500 mx-0.5">/</span>
+                                            <span id="totalTimeLabel">0:00</span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Right Controls: Speed, Theater, Miniplayer, Fullscreen -->
+                                    <div class="flex items-center gap-1.5 sm:gap-2">
+                                        <button onclick="player.cycleSpeed()" id="speedBtn" class="px-2 py-1 rounded-md bg-white/10 hover:bg-white/20 text-[11px] sm:text-xs font-semibold text-white transition-colors" title="Playback Speed">
+                                            1x
+                                        </button>
+
+                                        <button onclick="player.toggleMiniPlayer()" class="p-1.5 rounded-lg hover:bg-white/10 text-gray-200 hover:text-white transition-colors" title="Miniplayer">
+                                            <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                                <rect x="3" y="4" width="18" height="16" rx="2"/>
+                                                <rect x="11" y="11" width="8" height="6" rx="1" fill="currentColor"/>
+                                            </svg>
+                                        </button>
+
+                                        <button onclick="player.toggleTheater()" class="hidden lg:inline-flex p-1.5 rounded-lg hover:bg-white/10 text-gray-200 hover:text-white transition-colors" title="Theater Mode (T)">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                                <rect x="2" y="5" width="20" height="14" rx="2"/>
+                                            </svg>
+                                        </button>
+
+                                        <button onclick="player.toggleFullscreen()" class="p-1.5 rounded-lg hover:bg-white/10 text-gray-200 hover:text-white transition-colors" title="Fullscreen (F)">
+                                            <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Video Title, Creator & Engagement Bar -->
+                        <div class="space-y-4 pt-1">
+                            <h1 id="watchTitle" class="text-lg sm:text-2xl font-bold text-white leading-snug"></h1>
+
+                            <div class="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-vyro-800">
+                                <!-- Channel Identity & Subscribe -->
+                                <div class="flex items-center gap-3 sm:gap-3.5">
+                                    <div id="watchCreatorAvatar" class="keep-white w-10 h-10 sm:w-11 sm:h-11 rounded-2xl flex items-center justify-center font-bold text-white text-sm sm:text-base shadow-md"></div>
+                                    <div>
+                                        <div class="flex items-center gap-1.5">
+                                            <h3 id="watchCreatorName" class="font-semibold text-white text-sm sm:text-base"></h3>
+                                            <svg class="w-4 h-4 text-vyro-cyan" viewBox="0 0 24 24" fill="currentColor">
+                                                <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                            </svg>
+                                        </div>
+                                        <p id="watchCreatorSubs" class="text-xs text-gray-400"></p>
+                                    </div>
+                                    <button id="watchSubBtn" onclick="app.toggleSubscribeCurrent()" class="ml-2 sm:ml-3 px-3.5 sm:px-4 py-2 rounded-xl font-semibold text-xs sm:text-sm transition-all"></button>
+                                </div>
+
+                                <!-- Action Buttons (Like, Dislike, Save, Share) -->
+                                <div class="flex items-center gap-2 flex-wrap">
+                                    <div class="flex items-center bg-vyro-900 border border-vyro-800 rounded-xl overflow-hidden">
+                                        <button id="watchLikeBtn" onclick="app.toggleLikeCurrent()" class="flex items-center gap-2 px-3.5 py-2 text-xs sm:text-sm font-medium hover:bg-vyro-800 transition-colors">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5"/>
+                                            </svg>
+                                            <span id="watchLikesCount">0</span>
+                                        </button>
+                                        <div class="w-px h-5 bg-vyro-800"></div>
+                                        <button id="watchDislikeBtn" onclick="app.toggleDislikeCurrent()" class="px-3 py-2 text-gray-400 hover:text-white hover:bg-vyro-800 transition-colors" title="Dislike">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M10 14H5.236a2 2 0 01-1.789-2.894l3.5-7A2 2 0 018.736 3h4.018c.163 0 .326.02.485.06L17 4m-7 10v5a2 2 0 002 2h.095c.5 0 .905-.405.905-.905 0-.714.211-1.412.608-2.006L17 13V4m-7 10h2m5-10h2a2 2 0 012 2v6a2 2 0 01-2 2h-2.5"/>
+                                            </svg>
+                                        </button>
+                                    </div>
+
+                                    <button id="watchSaveBtn" onclick="app.toggleSaveCurrent()" class="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-vyro-900 hover:bg-vyro-800 border border-vyro-800 text-xs sm:text-sm font-medium text-gray-200 transition-colors">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/>
+                                        </svg>
+                                        <span id="watchSaveLabel">Save</span>
+                                    </button>
+
+                                    <button onclick="app.shareCurrentVideo()" class="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-vyro-900 hover:bg-vyro-800 border border-vyro-800 text-xs sm:text-sm font-medium text-gray-200 transition-colors">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
+                                        </svg>
+                                        <span>Share</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Description Box & Interactive Chapters -->
+                            <div class="bg-vyro-900/90 border border-vyro-800 rounded-2xl p-4 space-y-3">
+                                <div class="flex items-center gap-3 text-xs font-semibold text-gray-300">
+                                    <span id="watchViewsDate"></span>
+                                    <span class="px-2 py-0.5 rounded bg-vyro-800 text-vyro-cyan" id="watchCategoryTag"></span>
+                                </div>
+                                <p id="watchDescription" class="text-sm text-gray-300 leading-relaxed"></p>
+                                <!-- Interactive Timestamp Chapters -->
+                                <div class="pt-2">
+                                    <p class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">Interactive Chapters</p>
+                                    <div id="watchChapters" class="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1"></div>
+                                </div>
+                            </div>
+
+                            <!-- Comments Section -->
+                            <div class="pt-4 space-y-4">
+                                <div class="flex items-center justify-between">
+                                    <h3 class="text-base font-bold text-white"><span id="commentCountLabel">0</span> Comments</h3>
+                                </div>
+
+                                <!-- Add Comment Form -->
+                                <form onsubmit="app.postComment(event)" class="flex items-start gap-3">
+                                    <div class="keep-white w-9 h-9 rounded-xl bg-gradient-to-br from-vyro-cyan to-vyro-accent flex items-center justify-center text-xs font-bold text-white flex-shrink-0">
+                                        AK
+                                    </div>
+                                    <div class="flex-1 flex gap-2">
+                                        <input id="commentInput" type="text" placeholder="Add a public comment or timestamp (e.g. 01:15)..." required
+                                            class="flex-1 bg-vyro-900 border border-vyro-800 focus:border-vyro-accent rounded-xl px-3.5 sm:px-4 py-2.5 text-xs sm:text-sm text-gray-100 placeholder-gray-500 focus:outline-none">
+                                        <button type="submit" class="keep-white px-4 py-2.5 rounded-xl bg-vyro-accent hover:bg-vyro-accentHover text-white font-semibold text-xs transition-colors">
+                                            Post
+                                        </button>
+                                    </div>
+                                </form>
+
+                                <div id="commentsList" class="space-y-3 pt-2"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Up Next & Related Sidebar Column -->
+                    <div id="relatedColumn" class="lg:col-span-4 space-y-4">
+                        <div class="flex items-center justify-between">
+                            <h3 class="text-sm font-bold uppercase tracking-wider text-gray-400">Up Next Queue</h3>
+                            <label class="flex items-center gap-2 cursor-pointer text-xs text-gray-300">
+                                <span>Autoplay</span>
+                                <input id="autoplayToggle" type="checkbox" checked class="accent-vyro-accent rounded">
+                            </label>
+                        </div>
+                        <div id="relatedList" class="space-y-3"></div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="view-pulse" class="hidden p-3 sm:p-6 max-w-4xl mx-auto select-none">
+                <div class="flex flex-wrap items-center justify-between gap-3 mb-4 sm:mb-6">
+                    <div>
+                        <div class="flex items-center gap-2.5">
+                            <h1 class="text-xl sm:text-2xl font-extrabold text-white flex items-center gap-2">
+                                <svg class="w-6 h-6 text-vyro-rose" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                                </svg>
+                                Vyro Pulse
+                            </h1>
+                            <span id="pulseCounterBadge" class="px-2.5 py-0.5 rounded-full bg-vyro-800 border border-vyro-700 text-xs font-mono font-bold text-vyro-cyan">1 / 8</span>
+                        </div>
+                        <p class="text-xs text-gray-400 mt-0.5">Drag/Swipe up &amp; down, scroll wheel, or use arrow keys for instant vertical switching</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button onclick="app.animatePulseTransition(-1)" title="Previous Pulse (Swipe Down)" class="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-vyro-900 hover:bg-vyro-800 border border-vyro-800 text-xs font-semibold text-gray-200 transition-colors">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7"/></svg>
+                            <span class="hidden sm:inline">Prev</span>
+                        </button>
+                        <button onclick="app.animatePulseTransition(1)" title="Next Pulse (Swipe Up)" class="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-vyro-900 hover:bg-vyro-800 border border-vyro-800 text-xs font-semibold text-gray-200 transition-colors">
+                            <span class="hidden sm:inline">Next</span>
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Interactive Swipe Deck Viewport -->
+                <div class="flex items-center justify-center gap-4">
+                    <div id="pulseViewport" class="relative rounded-3xl overflow-hidden bg-vyro-950 border border-vyro-700/90 shadow-2xl mx-auto">
+                        
+                        <!-- Dynamic Swipe Direction Feedback Pill -->
+                        <div id="pulseSwipeFeedback" class="keep-white pointer-events-none absolute inset-x-0 top-14 z-30 flex justify-center opacity-0 transition-opacity duration-150">
+                            <span id="pulseSwipeFeedbackText" class="px-3.5 py-1 rounded-full bg-vyro-accent/90 backdrop-blur-md text-[11px] font-bold uppercase tracking-wider text-white shadow-lg">
+                                Release for Next Stream
+                            </span>
+                        </div>
+
+                        <!-- Physics-Animated Card Container -->
+                        <div id="pulseCardWrapper" class="keep-white relative w-full h-full cursor-grab active:cursor-grabbing">
+                            <canvas id="pulseCanvas" class="w-full h-full block"></canvas>
+                            <video id="pulseRealVideo" class="w-full h-full object-cover hidden pointer-events-none" crossorigin="anonymous" playsinline muted loop preload="auto"></video>
+
+                            <!-- Double-Tap Heart Burst Container -->
+                            <div id="pulseHeartContainer" class="pointer-events-none absolute inset-0 overflow-hidden z-30"></div>
+                            
+                            <!-- Top Status & Audio Control -->
+                            <div class="absolute top-4 inset-x-4 flex items-center justify-between pointer-events-none z-20">
+                                <div class="flex items-center gap-2 px-2.5 py-1 rounded-full bg-black/65 backdrop-blur-md border border-white/10">
+                                    <span class="w-2 h-2 rounded-full bg-vyro-rose animate-pulse"></span>
+                                    <span class="text-[11px] font-bold tracking-wider text-white">PULSE LIVE</span>
+                                </div>
+                                <button onclick="event.stopPropagation(); app.togglePulseAudio()" class="pointer-events-auto px-3 py-1 rounded-full bg-black/65 hover:bg-black/80 backdrop-blur-md text-xs font-semibold text-white border border-white/15 transition-colors" id="pulseAudioBadge">
+                                    Audio: OFF
+                                </button>
+                            </div>
+
+                            <!-- Floating Animated Swipe Up/Down Gesture Coach Overlay -->
+                            <div id="pulseSwipeHintOverlay" class="swipe-float-hint pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 flex flex-col items-center gap-1.5 bg-black/45 backdrop-blur-md px-2 py-3 rounded-2xl border border-white/10">
+                                <svg class="w-4 h-4 text-vyro-cyan" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7"/></svg>
+                                <span class="text-[9px] font-mono uppercase tracking-widest text-gray-300" style="writing-mode: vertical-rl;">SWIPE</span>
+                                <svg class="w-4 h-4 text-vyro-cyan" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+                            </div>
+
+                            <!-- Right Vertical Action Rail -->
+                            <div class="absolute right-3 bottom-28 flex flex-col items-center gap-3.5 z-20">
+                                <button onclick="event.stopPropagation(); app.likePulse()" class="flex flex-col items-center gap-1 group">
+                                    <div class="w-11 h-11 rounded-2xl bg-black/65 backdrop-blur-md border border-white/15 flex items-center justify-center text-white group-hover:bg-vyro-rose transition-colors">
+                                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                                    </div>
+                                    <span id="pulseLikesCount" class="text-xs font-bold text-white">24.5K</span>
+                                </button>
+
+                                <button onclick="event.stopPropagation(); app.openCurrentPulseInWatch()" title="Open Full Stream" class="flex flex-col items-center gap-1 group">
+                                    <div class="w-11 h-11 rounded-2xl bg-black/65 backdrop-blur-md border border-white/15 flex items-center justify-center text-white group-hover:bg-vyro-cyan transition-colors">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                                    </div>
+                                    <span class="text-[11px] font-semibold text-white">Full 4K</span>
+                                </button>
+
+                                <button onclick="event.stopPropagation(); app.animatePulseTransition(1)" class="flex flex-col items-center gap-1 group">
+                                    <div class="w-11 h-11 rounded-2xl bg-black/65 backdrop-blur-md border border-white/15 flex items-center justify-center text-white group-hover:bg-vyro-accent transition-colors">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 13l-7 7-7-7m14-8l-7 7-7-7"/></svg>
+                                    </div>
+                                    <span class="text-[11px] font-semibold text-white">Swipe</span>
+                                </button>
+                            </div>
+
+                            <!-- Bottom Pulse Metadata -->
+                            <div class="absolute bottom-0 inset-x-0 p-5 bg-gradient-to-t from-black/95 via-black/75 to-transparent pointer-events-none z-20">
+                                <div class="flex items-center gap-2.5 mb-2">
+                                    <div id="pulseCreatorBadge" class="w-8 h-8 rounded-xl bg-vyro-accent flex items-center justify-center font-bold text-xs text-white shadow">VX</div>
+                                    <span id="pulseCreator" class="text-sm font-bold text-white"></span>
+                                    <span class="px-2 py-0.5 rounded-md bg-white/15 text-[10px] font-semibold text-white">Follow</span>
+                                </div>
+                                <h2 id="pulseTitle" class="text-base font-bold text-white leading-snug line-clamp-2"></h2>
+                                <p id="pulseTag" class="text-xs text-vyro-cyan mt-1 font-medium"></p>
+                                <!-- Live Pulse Loop Progress Bar -->
+                                <div class="mt-3 h-1 w-full rounded-full bg-white/20 overflow-hidden">
+                                    <div id="pulseProgressBar" class="h-full w-0 bg-gradient-to-r from-vyro-accent to-vyro-cyan transition-all duration-100"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Vertical Stream Progress Dots Indicator (Desktop & Tablet) -->
+                    <div id="pulseDotsRail" class="hidden sm:flex flex-col items-center gap-2 py-3 px-2 rounded-full bg-vyro-900 border border-vyro-800"></div>
+                </div>
+            </section>
+
+            <section id="view-studio" class="hidden p-4 sm:p-6 max-w-[1400px] mx-auto space-y-6">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-vyro-800">
+                    <div>
+                        <h1 class="text-2xl font-extrabold text-white">Vyro Creator Studio</h1>
+                        <p class="text-sm text-gray-400">Real-time channel telemetry, audience retention, and published streams</p>
+                    </div>
+                    <button onclick="app.openUploadModal()" class="keep-white self-start sm:self-auto flex items-center gap-2 px-4 py-2.5 rounded-xl bg-vyro-accent hover:bg-vyro-accentHover text-white text-sm font-semibold shadow-lg shadow-vyro-accent/25">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+                        Upload New Video
+                    </button>
+                </div>
+
+                <!-- KPI Metric Cards -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="bg-vyro-900 border border-vyro-800 rounded-2xl p-5 space-y-2">
+                        <span class="text-xs font-bold uppercase tracking-wider text-gray-400">Total Channel Views</span>
+                        <div class="text-2xl font-extrabold text-white" id="studioTotalViews">1,482,910</div>
+                        <span class="text-xs text-emerald-400 font-medium">+18.4% vs last 28 days</span>
+                    </div>
+                    <div class="bg-vyro-900 border border-vyro-800 rounded-2xl p-5 space-y-2">
+                        <span class="text-xs font-bold uppercase tracking-wider text-gray-400">Watch Time (Hours)</span>
+                        <div class="text-2xl font-extrabold text-white">94,320 hrs</div>
+                        <span class="text-xs text-emerald-400 font-medium">+11.2% retention boost</span>
+                    </div>
+                    <div class="bg-vyro-900 border border-vyro-800 rounded-2xl p-5 space-y-2">
+                        <span class="text-xs font-bold uppercase tracking-wider text-gray-400">Active Subscribers</span>
+                        <div class="text-2xl font-extrabold text-white">128.4K</div>
+                        <span class="text-xs text-vyro-cyan font-medium">99.2% verified human</span>
+                    </div>
+                    <div class="bg-vyro-900 border border-vyro-800 rounded-2xl p-5 space-y-2">
+                        <span class="text-xs font-bold uppercase tracking-wider text-gray-400">Published Videos</span>
+                        <div class="text-2xl font-extrabold text-white" id="studioVideoCount">0</div>
+                        <span class="text-xs text-gray-400 font-medium">4K HDR Synth Ready</span>
+                    </div>
+                </div>
+
+                <!-- Studio Video Management Table -->
+                <div class="bg-vyro-900 border border-vyro-800 rounded-2xl overflow-hidden">
+                    <div class="px-6 py-4 border-b border-vyro-800 flex items-center justify-between">
+                        <h3 class="font-bold text-white text-sm uppercase tracking-wider">Catalog Content</h3>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="border-b border-vyro-800 text-[11px] font-bold uppercase text-gray-400">
+                                    <th class="py-3.5 px-6">Video</th>
+                                    <th class="py-3.5 px-4">Category</th>
+                                    <th class="py-3.5 px-4">Views</th>
+                                    <th class="py-3.5 px-4">Likes</th>
+                                    <th class="py-3.5 px-6 text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="studioTableBody" class="divide-y divide-vyro-800/60 text-sm"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Floating Picture-in-Picture Miniplayer -->
+    <div id="miniPlayer" class="hidden fixed bottom-16 md:bottom-5 right-3 sm:right-4 z-50 w-72 sm:w-80 bg-vyro-900 border border-vyro-700 rounded-2xl shadow-2xl overflow-hidden">
+        <div class="keep-white relative aspect-video bg-black cursor-pointer" onclick="app.restoreFromMiniPlayer()">
+            <canvas id="miniCanvas" class="w-full h-full block"></canvas>
+            <div class="absolute inset-0 bg-black/30 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center">
+                <span class="px-3 py-1 rounded-lg bg-black/80 text-xs font-semibold text-white">Expand Player</span>
+            </div>
+        </div>
+        <div class="p-3 flex items-center justify-between gap-2">
+            <div class="min-w-0 flex-1 cursor-pointer" onclick="app.restoreFromMiniPlayer()">
+                <p id="miniTitle" class="text-xs font-bold text-white truncate"></p>
+                <p id="miniCreator" class="text-[11px] text-gray-400 truncate"></p>
+            </div>
+            <div class="flex items-center gap-1">
+                <button onclick="player.togglePlay()" class="p-1.5 rounded-lg hover:bg-vyro-800 text-white">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                </button>
+                <button onclick="player.closeMiniPlayer()" class="p-1.5 rounded-lg hover:bg-vyro-800 text-gray-400 hover:text-white">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile Bottom Navigation -->
+    <nav id="mobileBottomNav" class="md:hidden fixed bottom-0 inset-x-0 h-15 py-1.5 bg-vyro-950/95 backdrop-blur-lg border-t border-vyro-800 flex items-center justify-around z-40">
+        <button data-mob-nav="home" onclick="app.navigate('home')" class="mob-nav-item flex flex-col items-center gap-0.5 px-3 py-1 rounded-xl text-gray-400 hover:text-white transition-colors">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l9-9 9 9M5 10v10a1 1 0 001 1h3a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1h3a1 1 0 001-1V10"/></svg>
+            <span class="text-[10px] font-semibold">Home</span>
+        </button>
+        <button data-mob-nav="pulse" onclick="app.navigate('pulse')" class="mob-nav-item flex flex-col items-center gap-0.5 px-3 py-1 rounded-xl text-gray-400 hover:text-white transition-colors">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+            <span class="text-[10px] font-semibold">Pulse</span>
+        </button>
+        <button onclick="app.openUploadModal()" class="keep-white p-2.5 rounded-2xl bg-vyro-accent text-white shadow-lg shadow-vyro-accent/30 active:scale-95 transition-transform">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+        </button>
+        <button data-mob-nav="watchlater" onclick="app.navigate('watchlater')" class="mob-nav-item flex flex-col items-center gap-0.5 px-3 py-1 rounded-xl text-gray-400 hover:text-white transition-colors">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/></svg>
+            <span class="text-[10px] font-semibold">Saved</span>
+        </button>
+        <button data-mob-nav="studio" onclick="app.navigate('studio')" class="mob-nav-item flex flex-col items-center gap-0.5 px-3 py-1 rounded-xl text-gray-400 hover:text-white transition-colors">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+            <span class="text-[10px] font-semibold">Studio</span>
+        </button>
+    </nav>
+
+    <!-- Publish / Upload Video Modal -->
+    <div id="uploadModal" class="hidden fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-vyro-900 border border-vyro-700 rounded-3xl max-w-lg w-full p-6 space-y-5 shadow-2xl">
+            <div class="flex items-center justify-between border-b border-vyro-800 pb-4">
+                <div>
+                    <h2 class="text-lg font-bold text-white">Publish to Vyro Network</h2>
+                    <p class="text-xs text-gray-400">Attach a local video file or generate an algorithmic 4K synth stream</p>
+                </div>
+                <button onclick="app.closeUploadModal()" class="p-1.5 rounded-xl hover:bg-vyro-800 text-gray-400 hover:text-white">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+
+            <form onsubmit="app.handlePublishVideo(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1.5">Video Title</label>
+                    <input id="upTitle" type="text" required placeholder="e.g., Building a Neural Raytracer in WebGPU"
+                        class="w-full bg-vyro-950 border border-vyro-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-vyro-accent">
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1.5">Category</label>
+                        <select id="upCategory" class="w-full bg-vyro-950 border border-vyro-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-vyro-accent">
+                            <option value="Technology">Technology</option>
+                            <option value="Gaming">Gaming</option>
+                            <option value="Music & Synth">Music & Synth</option>
+                            <option value="Science">Science</option>
+                            <option value="Design & 3D">Design & 3D</option>
+                            <option value="Cinema">Cinema</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1.5">Visual Theme</label>
+                        <select id="upVisualStyle" class="w-full bg-vyro-950 border border-vyro-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-vyro-accent">
+                            <option value="cyber">Cybernetic Grid</option>
+                            <option value="nebula">Deep Space Nebula</option>
+                            <option value="waveform">Harmonic Spectrum</option>
+                            <option value="matrix">Quantum Particles</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1.5">Optional Local Video File (.mp4 / .webm)</label>
+                    <input id="upFile" type="file" accept="video/*"
+                        class="w-full text-xs text-gray-400 file:mr-3 file:py-2 file:px-3.5 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-vyro-800 file:text-white hover:file:bg-vyro-700 cursor-pointer">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1.5">Description</label>
+                    <textarea id="upDesc" rows="3" required placeholder="Explain the architecture, tools, and timestamps..."
+                        class="w-full bg-vyro-950 border border-vyro-700 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:border-vyro-accent"></textarea>
+                </div>
+
+                <div class="pt-2 flex items-center justify-end gap-3">
+                    <button type="button" onclick="app.closeUploadModal()" class="px-4 py-2.5 rounded-xl bg-vyro-800 hover:bg-vyro-700 text-xs font-semibold text-gray-300">Cancel</button>
+                    <button type="submit" class="keep-white px-5 py-2.5 rounded-xl bg-vyro-accent hover:bg-vyro-accentHover text-xs font-semibold text-white shadow-lg shadow-vyro-accent/30">Publish Stream</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Custom Toast Notification Container -->
+    <div id="toastContainer" class="fixed bottom-20 md:bottom-6 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center gap-2 pointer-events-none w-max max-w-[90vw]"></div>
+
+    <script>
+        /* ============================================================================
+           VYRO PLATFORM CORE DATA & REAL HD STREAM + SYNTH ENGINE
+           ============================================================================ */
+        const SAMPLE_MP4_STREAMS = [
+            'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
+            'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4',
+            'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4',
+            'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4',
+            'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WeAreGoingOnBullrun.mp4'
+        ];
+
+        const INITIAL_VIDEOS = [
+            {
+                id: 'vyro-101',
+                title: 'Architecting a Zero-Latency Distributed Video Engine in Rust & WebGPU',
+                creator: 'Kairo Systems',
+                creatorInitials: 'KS',
+                creatorColor: '#6366f1',
+                subscribers: '412K',
+                views: 284900,
+                likes: 19420,
+                uploadedAt: '3 hours ago',
+                timestamp: 1730000900,
+                duration: 15,
+                category: 'Technology',
+                visualStyle: 'cyber',
+                accentHex: '#6366f1',
+                secondaryHex: '#06b6d4',
+                videoUrl: SAMPLE_MP4_STREAMS[0],
+                description: 'A deep architectural walkthrough on designing sub-millisecond video frame pipelines using modern compute shaders, custom ring buffers, and edge relay nodes.',
+                chapters: [
+                    { title: '00:00 Engine Architecture', time: 0 },
+                    { title: '00:04 WebGPU Compute Pipeline', time: 4 },
+                    { title: '00:09 Zero-Copy Memory Ring', time: 9 },
+                    { title: '00:12 Global Edge Benchmarks', time: 12 }
+                ],
+                comments: [
+                    { user: 'DevVortex', initials: 'DV', time: '2h ago', text: 'The zero-copy ring buffer explanation at 00:09 is pure gold. Saved our team weeks of debugging.' },
+                    { user: 'Elena Vance', initials: 'EV', time: '1h ago', text: 'Finally a platform that streams real HD footage and switches seamlessly to 4K shaders!' }
+                ]
+            },
+            {
+                id: 'vyro-102',
+                title: 'Beyond the Event Horizon: Simulating Kerr Black Holes at 120 FPS',
+                creator: 'CosmoLab Institute',
+                creatorInitials: 'CL',
+                creatorColor: '#ec4899',
+                subscribers: '890K',
+                views: 612400,
+                likes: 54100,
+                uploadedAt: '1 day ago',
+                timestamp: 1730000800,
+                duration: 15,
+                category: 'Science',
+                visualStyle: 'nebula',
+                accentHex: '#f43f5e',
+                secondaryHex: '#8b5cf6',
+                videoUrl: SAMPLE_MP4_STREAMS[1],
+                description: 'Using general relativistic ray-marching equations to visualize photon spheres, relativistic Doppler beaming, and accretion disk turbulence.',
+                chapters: [
+                    { title: '00:00 Schwarzschild vs Kerr Metric', time: 0 },
+                    { title: '00:05 Geodesic Ray Integration', time: 5 },
+                    { title: '00:10 Accretion Plasma Shaders', time: 10 }
+                ],
+                comments: [
+                    { user: 'AstroNaveen', initials: 'AN', time: '19h ago', text: 'The gravitational lensing around the photon ring at 00:10 looks mesmerizing in Ambient Mode.' }
+                ]
+            },
+            {
+                id: 'vyro-103',
+                title: 'Analog Modular Synthesis: Building Generative Cyberpunk Soundscapes',
+                creator: 'SynthWave Modular',
+                creatorInitials: 'SW',
+                creatorColor: '#06b6d4',
+                subscribers: '275K',
+                views: 149200,
+                likes: 14800,
+                uploadedAt: '2 days ago',
+                timestamp: 1730000700,
+                duration: 60,
+                category: 'Music & Synth',
+                visualStyle: 'waveform',
+                accentHex: '#06b6d4',
+                secondaryHex: '#3b82f6',
+                videoUrl: SAMPLE_MP4_STREAMS[2],
+                description: 'Live patching a polyphonic FM synthesizer from scratch. Turn on your audio in the player to hear real-time audio or switch to 4K Synth Visualizer mode.',
+                chapters: [
+                    { title: '00:00 Oscillator Calibration', time: 0 },
+                    { title: '00:15 Sub-Harmonic Bassline', time: 15 },
+                    { title: '00:35 Arpeggiator Modulation', time: 35 }
+                ],
+                comments: [
+                    { user: 'Kiran Audio', initials: 'KA', time: '1d ago', text: 'Listening to this while coding at 2 AM hits different.' }
+                ]
+            },
+            {
+                id: 'vyro-104',
+                title: 'Procedural Worlds: How Next-Gen Engines Generate Entire Planets',
+                creator: 'Vertex Foundry',
+                creatorInitials: 'VF',
+                creatorColor: '#10b981',
+                subscribers: '530K',
+                views: 398100,
+                likes: 31200,
+                uploadedAt: '4 days ago',
+                timestamp: 1730000600,
+                duration: 15,
+                category: 'Gaming',
+                visualStyle: 'matrix',
+                accentHex: '#10b981',
+                secondaryHex: '#06b6d4',
+                videoUrl: SAMPLE_MP4_STREAMS[3],
+                description: 'Exploring octree LOD planetary terrain, atmospheric Rayleigh scattering, and hydraulic erosion algorithms running entirely on the GPU.',
+                chapters: [
+                    { title: '00:00 QuadSphere Subdivision', time: 0 },
+                    { title: '00:05 Tectonic Noise Fields', time: 5 },
+                    { title: '00:10 Atmospheric Scattering', time: 10 }
+                ],
+                comments: []
+            },
+            {
+                id: 'vyro-105',
+                title: 'Minimalist Industrial UI Systems: Designing for High-Density Telemetry',
+                creator: 'Studio Monolith',
+                creatorInitials: 'SM',
+                creatorColor: '#f59e0b',
+                subscribers: '195K',
+                views: 98400,
+                likes: 9240,
+                uploadedAt: '5 days ago',
+                timestamp: 1730000500,
+                duration: 47,
+                category: 'Design & 3D',
+                visualStyle: 'cyber',
+                accentHex: '#f59e0b',
+                secondaryHex: '#ef4444',
+                videoUrl: SAMPLE_MP4_STREAMS[4],
+                description: 'Why modern flight decks, autonomous vehicles, and financial terminals rely on high-contrast vector typography and dark-room color tokens.',
+                chapters: [
+                    { title: '00:00 Typography Hierarchy', time: 0 },
+                    { title: '00:15 Color Token Contrast', time: 15 },
+                    { title: '00:30 Micro-Interaction Timing', time: 30 }
+                ],
+                comments: []
+            },
+            {
+                id: 'vyro-106',
+                title: 'Quantum Error Correction: Inside a 1,000-Qubit Cryogenic Processor',
+                creator: 'Qubit Horizon',
+                creatorInitials: 'QH',
+                creatorColor: '#8b5cf6',
+                subscribers: '640K',
+                views: 512000,
+                likes: 43900,
+                uploadedAt: '1 week ago',
+                timestamp: 1730000400,
+                duration: 15,
+                category: 'Science',
+                visualStyle: 'matrix',
+                accentHex: '#8b5cf6',
+                secondaryHex: '#ec4899',
+                videoUrl: SAMPLE_MP4_STREAMS[0],
+                description: 'Surface codes, dilution refrigerators operating at 15 millikelvin, and real-time microwave pulse stabilization.',
+                chapters: [
+                    { title: '00:00 Decoherence Challenge', time: 0 },
+                    { title: '00:05 Topological Surface Codes', time: 5 },
+                    { title: '00:10 Cryogenic Control Stack', time: 10 }
+                ],
+                comments: []
+            },
+            {
+                id: 'vyro-107',
+                title: 'Anamorphic Night Cinematography: Neo-Tokyo Color Grading Masterclass',
+                creator: 'Lumen Cinema',
+                creatorInitials: 'LC',
+                creatorColor: '#0ea5e9',
+                subscribers: '320K',
+                views: 215800,
+                likes: 18700,
+                uploadedAt: '1 week ago',
+                timestamp: 1730000300,
+                duration: 15,
+                category: 'Cinema',
+                visualStyle: 'nebula',
+                accentHex: '#0ea5e9',
+                secondaryHex: '#f43f5e',
+                videoUrl: SAMPLE_MP4_STREAMS[1],
+                description: 'Halation modeling, split-toning cyan highlights against deep tungsten shadows, and managing dynamic range in rain-slicked urban environments.',
+                chapters: [
+                    { title: '00:00 Optical Characteristics', time: 0 },
+                    { title: '00:05 Subtractive Color Nodes', time: 5 },
+                    { title: '00:10 Film Grain Emulation', time: 10 }
+                ],
+                comments: []
+            },
+            {
+                id: 'vyro-108',
+                title: 'Unreal 6 vs Custom Engines: The Future of Real-Time Global Illumination',
+                creator: 'Vertex Foundry',
+                creatorInitials: 'VF',
+                creatorColor: '#10b981',
+                subscribers: '530K',
+                views: 467300,
+                likes: 37500,
+                uploadedAt: '2 weeks ago',
+                timestamp: 1730000200,
+                duration: 15,
+                category: 'Gaming',
+                visualStyle: 'waveform',
+                accentHex: '#10b981',
+                secondaryHex: '#6366f1',
+                videoUrl: SAMPLE_MP4_STREAMS[3],
+                description: 'Comparing radiance cascades, spatiotemporal reservoir resampling (ReSTIR), and hardware raytracing performance across modern GPUs.',
+                chapters: [
+                    { title: '00:00 Radiance Cascades', time: 0 },
+                    { title: '00:05 ReSTIR GI Breakdown', time: 5 },
+                    { title: '00:10 Frame-Time Telemetry', time: 10 }
+                ],
+                comments: []
+            }
+        ];
+
+        const CATEGORIES = ['All', 'Technology', 'Science', 'Gaming', 'Music & Synth', 'Design & 3D', 'Cinema'];
+
+        /* Format seconds into MM:SS */
+        function formatDuration(sec) {
+            const s = Math.max(0, Math.floor(sec));
+            const mins = Math.floor(s / 60);
+            const rem = s % 60;
+            return `${mins}:${rem < 10 ? '0' : ''}${rem}`;
+        }
+
+        /* Format numbers into 284.9K / 1.2M */
+        function formatViews(num) {
+            if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+            if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
+            return num.toString();
+        }
+
+        /* Generate bespoke crisp SVG vector artwork for each video card */
+        function generateThumbnailSVG(video) {
+            const c1 = video.accentHex || '#6366f1';
+            const c2 = video.secondaryHex || '#06b6d4';
+            let patternMarkup = '';
+
+            if (video.visualStyle === 'cyber') {
+                patternMarkup = `
+                    <g stroke="${c2}" stroke-opacity="0.28" stroke-width="1">
+                        <line x1="0" y1="140" x2="640" y2="140"/>
+                        <line x1="0" y1="200" x2="640" y2="200"/>
+                        <line x1="0" y1="260" x2="640" y2="260"/>
+                        <line x1="0" y1="320" x2="640" y2="320"/>
+                        <line x1="320" y1="90" x2="40" y2="360"/>
+                        <line x1="320" y1="90" x2="180" y2="360"/>
+                        <line x1="320" y1="90" x2="320" y2="360"/>
+                        <line x1="320" y1="90" x2="460" y2="360"/>
+                        <line x1="320" y1="90" x2="600" y2="360"/>
+                    </g>
+                    <circle cx="320" cy="145" r="56" fill="url(#grad-${video.id})" opacity="0.85"/>
+                    <polygon points="320,75 390,195 250,195" fill="none" stroke="#ffffff" stroke-width="2" stroke-opacity="0.7"/>
+                `;
+            } else if (video.visualStyle === 'nebula') {
+                patternMarkup = `
+                    <circle cx="320" cy="180" r="110" fill="url(#grad-${video.id})" opacity="0.45"/>
+                    <ellipse cx="320" cy="180" rx="190" ry="42" fill="none" stroke="${c2}" stroke-width="3" stroke-opacity="0.65" transform="rotate(-14 320 180)"/>
+                    <ellipse cx="320" cy="180" rx="145" ry="26" fill="none" stroke="#ffffff" stroke-width="1.5" stroke-opacity="0.75" transform="rotate(-14 320 180)"/>
+                    <circle cx="320" cy="180" r="38" fill="#05060a" stroke="${c1}" stroke-width="2.5"/>
+                `;
+            } else if (video.visualStyle === 'waveform') {
+                patternMarkup = `
+                    <path d="M 0 180 Q 80 60, 160 180 T 320 180 T 480 180 T 640 180" fill="none" stroke="${c1}" stroke-width="4"/>
+                    <path d="M 0 180 Q 80 290, 160 180 T 320 180 T 480 180 T 640 180" fill="none" stroke="${c2}" stroke-width="3" stroke-opacity="0.75"/>
+                    <g fill="#ffffff" fill-opacity="0.5">
+                        <rect x="120" y="130" width="6" height="100" rx="3"/>
+                        <rect x="160" y="95" width="6" height="170" rx="3"/>
+                        <rect x="200" y="140" width="6" height="80" rx="3"/>
+                        <rect x="240" y="80" width="6" height="200" rx="3"/>
+                        <rect x="280" y="110" width="6" height="140" rx="3"/>
+                        <rect x="320" y="65" width="6" height="230" rx="3"/>
+                        <rect x="360" y="105" width="6" height="150" rx="3"/>
+                        <rect x="400" y="90" width="6" height="180" rx="3"/>
+                        <rect x="440" y="135" width="6" height="90" rx="3"/>
+                        <rect x="480" y="115" width="6" height="130" rx="3"/>
+                    </g>
+                `;
+            } else {
+                patternMarkup = `
+                    <g stroke="${c1}" stroke-opacity="0.35" stroke-width="1.5" fill="none">
+                        <rect x="190" y="65" width="260" height="230" rx="18"/>
+                        <rect x="225" y="95" width="190" height="170" rx="14"/>
+                        <rect x="260" y="125" width="120" height="110" rx="10"/>
+                    </g>
+                    <circle cx="320" cy="180" r="24" fill="${c2}"/>
+                    <line x1="120" y1="180" x2="520" y2="180" stroke="#ffffff" stroke-opacity="0.3" stroke-dasharray="6 6"/>
+                `;
+            }
+
+            return `
+                <svg viewBox="0 0 640 360" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                    <defs>
+                        <linearGradient id="bg-${video.id}" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#090b12"/>
+                            <stop offset="55%" stop-color="#121626"/>
+                            <stop offset="100%" stop-color="#090b12"/>
+                        </linearGradient>
+                        <linearGradient id="grad-${video.id}" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="${c1}"/>
+                            <stop offset="100%" stop-color="${c2}"/>
+                        </linearGradient>
+                    </defs>
+                    <rect width="640" height="360" fill="url(#bg-${video.id})"/>
+                    ${patternMarkup}
+                    <rect x="20" y="20" width="90" height="24" rx="6" fill="#000000" fill-opacity="0.65"/>
+                    <text x="32" y="36" fill="${c2}" font-size="11" font-family="Inter, sans-serif" font-weight="700" letter-spacing="1">${video.category.toUpperCase().slice(0, 8)}</text>
+                </svg>
+            `;
+        }
+
+        /* ============================================================================
+           ADAPTIVE HIDPI & RETINA DISPLAY CALIBRATION ENGINE (PC + PHONE)
+           ============================================================================ */
+        const dpiManager = {
+            dpr: 1,
+            rawDpr: 1,
+            isMobile: false,
+            observer: null,
+
+            init() {
+                this.recalculate();
+
+                if (window.visualViewport) {
+                    window.visualViewport.addEventListener('resize', () => {
+                        this.recalculate();
+                        player.resizeCanvas();
+                    });
+                }
+
+                if (window.ResizeObserver) {
+                    this.observer = new ResizeObserver(() => {
+                        this.recalculate();
+                        if (player.canvas) {
+                            const m = this.configureCanvas(player.canvas, player.ctx, 960, 540);
+                            player.logicalW = m.w;
+                            player.logicalH = m.h;
+                            player.dpr = m.dpr;
+                        }
+                        this.updateMetrics();
+                    });
+                    const container = document.getElementById('playerAmbientContainer');
+                    const pulseVp = document.getElementById('pulseViewport');
+                    if (container) this.observer.observe(container);
+                    if (pulseVp) this.observer.observe(pulseVp);
+                }
+
+                this.watchDprChanges();
+                this.updateMetrics();
+            },
+
+            watchDprChanges() {
+                const raw = window.devicePixelRatio || 1;
+                try {
+                    const mq = window.matchMedia(`(resolution: ${raw}dppx)`);
+                    if (mq && mq.addEventListener) {
+                        mq.addEventListener('change', () => {
+                            this.recalculate();
+                            player.resizeCanvas();
+                            this.watchDprChanges();
+                        }, { once: true });
+                    }
+                } catch (e) {}
+            },
+
+            recalculate() {
+                this.rawDpr = window.devicePixelRatio || 1;
+                this.isMobile = window.innerWidth < 768 || ('ontouchstart' in window && window.innerWidth < 1024);
+
+                // For mobile Retina & Super AMOLED (2x, 3x, 3.5x), respect exact device pixel ratio
+                // while ensuring desktops get pristine 1.5x supersampled clarity.
+                if (this.isMobile) {
+                    this.dpr = Math.min(Math.max(this.rawDpr, 2), 3.5);
+                } else {
+                    this.dpr = this.rawDpr === 1 ? 1.5 : Math.min(Math.max(this.rawDpr, 1), 3);
+                }
+            },
+
+            configureCanvas(canvas, ctx, fallbackW, fallbackH) {
+                if (!canvas || !ctx) return { w: fallbackW, h: fallbackH, dpr: 1 };
+                this.recalculate();
+
+                const rect = canvas.getBoundingClientRect();
+                const cssW = rect.width > 10 ? rect.width : fallbackW;
+                const cssH = rect.height > 10 ? rect.height : fallbackH;
+
+                // Precise physical backing store pixel calculation
+                const physW = Math.max(1, Math.round(cssW * this.dpr));
+                const physH = Math.max(1, Math.round(cssH * this.dpr));
+
+                if (canvas.width !== physW || canvas.height !== physH) {
+                    canvas.width = physW;
+                    canvas.height = physH;
+                }
+
+                ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
+                ctx.imageSmoothingEnabled = true;
+                ctx.imageSmoothingQuality = 'high';
+
+                return { w: cssW, h: cssH, dpr: this.dpr, physW, physH };
+            },
+
+            updateMetrics() {
+                const sideBadge = document.getElementById('dpiStatusBadge');
+                const sideSub = document.getElementById('dpiResolutionSub');
+                const playerBadge = document.getElementById('playerDpiBadge');
+
+                const dprFormatted = `${this.dpr.toFixed(1)}x`;
+                const deviceType = this.isMobile ? 'Mobile Retina' : 'PC HiDPI';
+
+                if (sideBadge) {
+                    sideBadge.textContent = `${dprFormatted} DPI`;
+                }
+                if (sideSub) {
+                    const cw = player.canvas ? player.canvas.width : 1920;
+                    const ch = player.canvas ? player.canvas.height : 1080;
+                    sideSub.textContent = `${deviceType} • ${cw}×${ch}px`;
+                }
+                if (playerBadge) {
+                    playerBadge.textContent = player.usingRealVideo
+                        ? `HD STREAM • ${dprFormatted}`
+                        : `4K SYNTH • ${dprFormatted}`;
+                }
+            }
+        };
+
+        /* ============================================================================
+           HYBRID REAL HD VIDEO + 4K SYNTH SHADER PLAYER ENGINE
+           ============================================================================ */
+        const player = {
+            canvas: null,
+            ctx: null,
+            miniCanvas: null,
+            miniCtx: null,
+            realVideo: null,
+            currentVideo: null,
+            preferRealVideo: true,
+            usingRealVideo: false,
+            isPlaying: false,
+            isMuted: false,
+            volume: 0.7,
+            playbackSpeed: 1,
+            currentTime: 0,
+            duration: 15,
+            ambientEnabled: true,
+            theaterMode: false,
+            miniMode: false,
+            rafId: null,
+            lastTick: 0,
+            audioCtx: null,
+            masterGain: null,
+            osc1: null,
+            osc2: null,
+            dpr: 1,
+            logicalW: 960,
+            logicalH: 540,
+            miniW: 320,
+            miniH: 180,
+
+            init() {
+                this.canvas = document.getElementById('vyroCanvasPlayer');
+                this.ctx = this.canvas.getContext('2d');
+                this.miniCanvas = document.getElementById('miniCanvas');
+                this.miniCtx = this.miniCanvas.getContext('2d');
+                this.realVideo = document.getElementById('vyroRealVideo');
+
+                // Smart Single-Tap (Play/Pause) + Double-Tap Left/Right (±10s Seek) on Player Surface
+                this.setupPlayerSurfaceGestures(this.canvas);
+                this.setupPlayerSurfaceGestures(this.realVideo);
+
+                // Fallback automatically to 4K Synth if external video stream fails or is offline
+                this.realVideo.addEventListener('error', () => {
+                    if (this.usingRealVideo) {
+                        this.usingRealVideo = false;
+                        this.realVideo.classList.add('hidden');
+                        this.canvas.classList.remove('hidden');
+                        this.updateEngineBadge();
+                    }
+                });
+
+                this.realVideo.addEventListener('loadedmetadata', () => {
+                    if (this.usingRealVideo && this.realVideo.duration && isFinite(this.realVideo.duration)) {
+                        this.duration = this.realVideo.duration;
+                        this.updateTimeLabels();
+                    }
+                });
+
+                // Scrubber events
+                const scrubber = document.getElementById('playerScrubber');
+                scrubber.addEventListener('input', (e) => {
+                    const pct = parseFloat(e.target.value) / 100;
+                    this.seekTo(pct * this.duration);
+                });
+
+                // Volume slider
+                const volSlider = document.getElementById('volumeSlider');
+                volSlider.addEventListener('input', (e) => {
+                    this.setVolume(parseFloat(e.target.value));
+                });
+
+                // Global Keyboard Shortcuts when watching
+                window.addEventListener('keydown', (e) => {
+                    if (['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName)) return;
+                    if (!this.currentVideo) return;
+                    if (e.code === 'Space') {
+                        e.preventDefault();
+                        this.togglePlay();
+                    } else if (e.key.toLowerCase() === 'm') {
+                        this.toggleMute();
+                    } else if (e.key.toLowerCase() === 't') {
+                        this.toggleTheater();
+                    } else if (e.key.toLowerCase() === 'f') {
+                        this.toggleFullscreen();
+                    } else if (e.code === 'ArrowRight') {
+                        this.seekTo(Math.min(this.duration, this.currentTime + 5));
+                        this.flashSeekRipple('right');
+                    } else if (e.code === 'ArrowLeft') {
+                        this.seekTo(Math.max(0, this.currentTime - 5));
+                        this.flashSeekRipple('left');
+                    }
+                });
+
+                this.resizeCanvas();
+                window.addEventListener('resize', () => this.resizeCanvas());
+                dpiManager.init();
+                this.startRenderLoop();
+            },
+
+            setupPlayerSurfaceGestures(element) {
+                let lastTapTime = 0;
+                let tapTimeout = null;
+
+                element.addEventListener('click', (e) => {
+                    const now = performance.now();
+                    const rect = element.getBoundingClientRect();
+                    const clickX = e.clientX - rect.left;
+
+                    if (now - lastTapTime < 280) {
+                        clearTimeout(tapTimeout);
+                        if (clickX < rect.width * 0.4) {
+                            this.seekTo(Math.max(0, this.currentTime - 10));
+                            this.flashSeekRipple('left');
+                        } else if (clickX > rect.width * 0.6) {
+                            this.seekTo(Math.min(this.duration, this.currentTime + 10));
+                            this.flashSeekRipple('right');
+                        } else {
+                            this.toggleFullscreen();
+                        }
+                        lastTapTime = 0;
+                    } else {
+                        lastTapTime = now;
+                        tapTimeout = setTimeout(() => {
+                            this.togglePlay();
+                        }, 230);
+                    }
+                });
+            },
+
+            flashSeekRipple(side) {
+                const el = document.getElementById(side === 'left' ? 'seekRippleLeft' : 'seekRippleRight');
+                if (!el) return;
+                el.classList.remove('opacity-0');
+                el.classList.add('opacity-100');
+                setTimeout(() => {
+                    el.classList.remove('opacity-100');
+                    el.classList.add('opacity-0');
+                }, 420);
+            },
+
+            toggleVisualEngine() {
+                this.preferRealVideo = !this.preferRealVideo;
+                if (this.currentVideo) {
+                    const savedTime = this.currentTime;
+                    this.applyVideoSource(this.currentVideo, savedTime);
+                }
+                app.showToast(this.usingRealVideo ? 'Switched to Real HD Video Stream' : 'Switched to 4K Procedural Synth Shader');
+            },
+
+            updateEngineBadge() {
+                const label = document.getElementById('engineModeLabel');
+                if (label) {
+                    label.textContent = this.usingRealVideo ? 'Mode: Real HD' : 'Mode: 4K Synth';
+                }
+                dpiManager.updateMetrics();
+            },
+
+            applyVideoSource(video, startAt = 0) {
+                const streamSrc = video.blobUrl || (this.preferRealVideo ? video.videoUrl : null);
+                if (streamSrc) {
+                    this.usingRealVideo = true;
+                    if (this.realVideo.src !== streamSrc) {
+                        this.realVideo.src = streamSrc;
+                    }
+                    this.realVideo.currentTime = startAt;
+                    this.realVideo.volume = this.volume;
+                    this.realVideo.muted = this.isMuted;
+                    this.realVideo.playbackRate = this.playbackSpeed;
+                    this.realVideo.classList.remove('hidden');
+                    this.canvas.classList.add('hidden');
+                    if (this.isPlaying) {
+                        this.realVideo.play().catch(() => {});
+                    }
+                } else {
+                    this.usingRealVideo = false;
+                    this.realVideo.pause();
+                    this.realVideo.classList.add('hidden');
+                    this.canvas.classList.remove('hidden');
+                }
+                this.updateEngineBadge();
+                this.syncAudioDrone();
+            },
+
+            resizeCanvas() {
+                if (!this.canvas) return;
+                const mainMetrics = dpiManager.configureCanvas(this.canvas, this.ctx, 960, 540);
+                this.logicalW = mainMetrics.w;
+                this.logicalH = mainMetrics.h;
+                this.dpr = mainMetrics.dpr;
+
+                const miniMetrics = dpiManager.configureCanvas(this.miniCanvas, this.miniCtx, 320, 180);
+                this.miniW = miniMetrics.w;
+                this.miniH = miniMetrics.h;
+
+                dpiManager.updateMetrics();
+
+                if (this.currentVideo && !this.usingRealVideo) {
+                    this.drawSynthFrame(this.ctx, this.logicalW, this.logicalH, this.currentTime, this.currentVideo);
+                }
+            },
+
+            loadVideo(video) {
+                this.currentVideo = video;
+                this.currentTime = 0;
+                this.duration = video.duration || 15;
+                this.isPlaying = true;
+
+                this.applyVideoSource(video, 0);
+
+                document.getElementById('playerOverlayTitle').textContent = video.title;
+                requestAnimationFrame(() => this.resizeCanvas());
+                this.updateAmbientGlow();
+                this.updateTimeLabels();
+                this.play();
+            },
+
+            initWebAudio() {
+                if (this.audioCtx) return;
+                try {
+                    const AudioContext = window.AudioContext || window.webkitAudioContext;
+                    this.audioCtx = new AudioContext();
+                    this.masterGain = this.audioCtx.createGain();
+                    this.masterGain.gain.value = 0.0001;
+                    this.masterGain.connect(this.audioCtx.destination);
+
+                    this.osc1 = this.audioCtx.createOscillator();
+                    this.osc2 = this.audioCtx.createOscillator();
+                    this.osc1.type = 'sine';
+                    this.osc2.type = 'triangle';
+                    this.osc1.frequency.value = 110;
+                    this.osc2.frequency.value = 164.81;
+
+                    const filter = this.audioCtx.createBiquadFilter();
+                    filter.type = 'lowpass';
+                    filter.frequency.value = 420;
+
+                    this.osc1.connect(filter);
+                    this.osc2.connect(filter);
+                    filter.connect(this.masterGain);
+
+                    this.osc1.start();
+                    this.osc2.start();
+                } catch (err) {}
+            },
+
+            syncAudioDrone() {
+                if (!this.audioCtx || !this.masterGain) return;
+                if (this.audioCtx.state === 'suspended' && this.isPlaying && !this.usingRealVideo) {
+                    this.audioCtx.resume();
+                }
+                const shouldSound = this.isPlaying && !this.isMuted && !this.usingRealVideo;
+                const targetGain = shouldSound ? this.volume * 0.05 : 0.0001;
+                this.masterGain.gain.setTargetAtTime(targetGain, this.audioCtx.currentTime, 0.15);
+
+                if (this.currentVideo && this.osc1 && this.osc2) {
+                    const baseFreq = this.currentVideo.visualStyle === 'nebula' ? 98 :
+                                     this.currentVideo.visualStyle === 'waveform' ? 130.81 : 110;
+                    const mod = Math.sin(this.currentTime * 0.5) * 4;
+                    this.osc1.frequency.setTargetAtTime(baseFreq + mod, this.audioCtx.currentTime, 0.2);
+                    this.osc2.frequency.setTargetAtTime((baseFreq * 1.5) - mod, this.audioCtx.currentTime, 0.2);
+                }
+            },
+
+            play() {
+                this.isPlaying = true;
+                this.lastTick = performance.now();
+                this.initWebAudio();
+                if (this.usingRealVideo) {
+                    this.realVideo.play().catch(() => {});
+                }
+                this.syncAudioDrone();
+                this.updatePlayIcons();
+            },
+
+            pause() {
+                this.isPlaying = false;
+                if (this.usingRealVideo) {
+                    this.realVideo.pause();
+                }
+                this.syncAudioDrone();
+                this.updatePlayIcons();
+            },
+
+            togglePlay() {
+                if (this.isPlaying) {
+                    this.pause();
+                } else {
+                    this.play();
+                }
+                const overlay = document.getElementById('centerPlayOverlay');
+                overlay.classList.remove('opacity-0', 'scale-90');
+                overlay.classList.add('opacity-100', 'scale-105');
+                setTimeout(() => {
+                    overlay.classList.remove('opacity-100', 'scale-105');
+                    overlay.classList.add('opacity-0', 'scale-90');
+                }, 320);
+            },
+
+            updatePlayIcons() {
+                const playIcon = document.getElementById('playIcon');
+                const pauseIcon = document.getElementById('pauseIcon');
+                if (this.isPlaying) {
+                    playIcon.classList.add('hidden');
+                    pauseIcon.classList.remove('hidden');
+                } else {
+                    playIcon.classList.remove('hidden');
+                    pauseIcon.classList.add('hidden');
+                }
+            },
+
+            seekTo(seconds) {
+                this.currentTime = Math.max(0, Math.min(this.duration, seconds));
+                if (this.usingRealVideo) {
+                    this.realVideo.currentTime = this.currentTime;
+                }
+                this.updateTimeLabels();
+            },
+
+            setVolume(val) {
+                this.volume = val;
+                this.isMuted = val === 0;
+                this.realVideo.volume = val;
+                this.realVideo.muted = this.isMuted;
+                document.getElementById('volHighIcon').classList.toggle('hidden', this.isMuted);
+                document.getElementById('volMuteIcon').classList.toggle('hidden', !this.isMuted);
+                this.syncAudioDrone();
+            },
+
+            toggleMute() {
+                this.isMuted = !this.isMuted;
+                this.realVideo.muted = this.isMuted;
+                document.getElementById('volHighIcon').classList.toggle('hidden', this.isMuted);
+                document.getElementById('volMuteIcon').classList.toggle('hidden', !this.isMuted);
+                this.syncAudioDrone();
+            },
+
+            cycleSpeed() {
+                const speeds = [0.75, 1, 1.25, 1.5, 2];
+                const idx = (speeds.indexOf(this.playbackSpeed) + 1) % speeds.length;
+                this.playbackSpeed = speeds[idx];
+                this.realVideo.playbackRate = this.playbackSpeed;
+                document.getElementById('speedBtn').textContent = `${this.playbackSpeed}x`;
+                app.showToast(`Playback speed set to ${this.playbackSpeed}x`);
+            },
+
+            toggleAmbient() {
+                this.ambientEnabled = !this.ambientEnabled;
+                const dot = document.getElementById('ambientDot');
+                dot.className = `w-2 h-2 rounded-full ${this.ambientEnabled ? 'bg-vyro-cyan' : 'bg-gray-500'}`;
+                this.updateAmbientGlow();
+                app.showToast(`Ambient Glow ${this.ambientEnabled ? 'Enabled' : 'Disabled'}`);
+            },
+
+            updateAmbientGlow() {
+                const container = document.getElementById('playerAmbientContainer');
+                if (this.ambientEnabled && this.currentVideo) {
+                    const c = this.currentVideo.accentHex || '#6366f1';
+                    container.style.boxShadow = `0 0 85px -15px ${c}66`;
+                } else {
+                    container.style.boxShadow = 'none';
+                }
+            },
+
+            toggleTheater() {
+                this.theaterMode = !this.theaterMode;
+                const pCol = document.getElementById('playerColumn');
+                const rCol = document.getElementById('relatedColumn');
+                if (this.theaterMode) {
+                    pCol.classList.remove('lg:col-span-8');
+                    pCol.classList.add('lg:col-span-12');
+                    rCol.classList.remove('lg:col-span-4');
+                    rCol.classList.add('lg:col-span-12');
+                } else {
+                    pCol.classList.add('lg:col-span-8');
+                    pCol.classList.remove('lg:col-span-12');
+                    rCol.classList.add('lg:col-span-4');
+                    rCol.classList.remove('lg:col-span-12');
+                }
+                setTimeout(() => this.resizeCanvas(), 50);
+            },
+
+            toggleFullscreen() {
+                const container = document.getElementById('playerAmbientContainer');
+                if (!document.fullscreenElement) {
+                    container.requestFullscreen().catch(() => {});
+                } else {
+                    document.exitFullscreen().catch(() => {});
+                }
+            },
+
+            toggleMiniPlayer() {
+                if (!this.currentVideo) return;
+                this.miniMode = true;
+                document.getElementById('miniPlayer').classList.remove('hidden');
+                document.getElementById('miniTitle').textContent = this.currentVideo.title;
+                document.getElementById('miniCreator').textContent = this.currentVideo.creator;
+                app.navigate('home', true);
+            },
+
+            closeMiniPlayer() {
+                this.miniMode = false;
+                this.pause();
+                document.getElementById('miniPlayer').classList.add('hidden');
+            },
+
+            playNextRecommended() {
+                if (!this.currentVideo) return;
+                const others = app.videos.filter(v => v.id !== this.currentVideo.id);
+                if (others.length > 0) {
+                    app.watchVideo(others[0].id);
+                }
+            },
+
+            updateTimeLabels() {
+                document.getElementById('currentTimeLabel').textContent = formatDuration(this.currentTime);
+                document.getElementById('totalTimeLabel').textContent = formatDuration(this.duration);
+                const pct = this.duration > 0 ? (this.currentTime / this.duration) * 100 : 0;
+                document.getElementById('playerScrubber').value = pct;
+            },
+
+            /* Procedural 60FPS Canvas Shader Renderer */
+            drawSynthFrame(ctx, w, h, t, video) {
+                const c1 = video ? video.accentHex : '#6366f1';
+                const c2 = video ? video.secondaryHex : '#06b6d4';
+                const style = video ? video.visualStyle : 'cyber';
+
+                // Deep space background gradient
+                const bgGrad = ctx.createLinearGradient(0, 0, w, h);
+                bgGrad.addColorStop(0, '#06070b');
+                bgGrad.addColorStop(0.5, '#0f1322');
+                bgGrad.addColorStop(1, '#05060a');
+                ctx.fillStyle = bgGrad;
+                ctx.fillRect(0, 0, w, h);
+
+                ctx.save();
+                if (style === 'cyber') {
+                    // Moving 3D Perspective Horizon Grid
+                    const horizon = h * 0.46;
+                    const gradOrb = ctx.createRadialGradient(w / 2, horizon - 20, 5, w / 2, horizon - 20, h * 0.25);
+                    gradOrb.addColorStop(0, '#ffffff');
+                    gradOrb.addColorStop(0.3, c1);
+                    gradOrb.addColorStop(1, 'transparent');
+                    ctx.fillStyle = gradOrb;
+                    ctx.beginPath();
+                    ctx.arc(w / 2, horizon - 20, h * 0.25, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    ctx.strokeStyle = c2;
+                    ctx.lineWidth = 1.2;
+                    ctx.globalAlpha = 0.45;
+                    for (let i = -10; i <= 10; i++) {
+                        ctx.beginPath();
+                        ctx.moveTo(w / 2 + i * 18, horizon);
+                        ctx.lineTo(w / 2 + i * 140, h);
+                        ctx.stroke();
+                    }
+                    const speedOffset = (t * 45) % 30;
+                    for (let y = horizon; y < h; y += 26) {
+                        const py = y + speedOffset * ((y - horizon) / (h - horizon));
+                        if (py < h) {
+                            ctx.beginPath();
+                            ctx.moveTo(0, py);
+                            ctx.lineTo(w, py);
+                            ctx.stroke();
+                        }
+                    }
+                } else if (style === 'nebula') {
+                    // Rotating Relativistic Accretion Disk
+                    const cx = w / 2;
+                    const cy = h / 2;
+                    for (let r = 3; r >= 1; r--) {
+                        ctx.save();
+                        ctx.translate(cx, cy);
+                        ctx.rotate(t * 0.35 * (r % 2 === 0 ? 1 : -1));
+                        ctx.strokeStyle = r === 2 ? c2 : c1;
+                        ctx.lineWidth = 3 * r;
+                        ctx.globalAlpha = 0.35;
+                        ctx.beginPath();
+                        ctx.ellipse(0, 0, w * 0.14 * r, h * 0.05 * r, 0.2, 0, Math.PI * 2);
+                        ctx.stroke();
+                        ctx.restore();
+                    }
+                    ctx.fillStyle = '#040508';
+                    ctx.beginPath();
+                    ctx.arc(cx, cy, h * 0.11, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.strokeStyle = '#ffffff';
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                } else if (style === 'waveform') {
+                    // Harmonic Frequency Visualizer
+                    const bars = 42;
+                    const barW = (w * 0.7) / bars;
+                    const startX = w * 0.15;
+                    for (let i = 0; i < bars; i++) {
+                        const wave = Math.sin(t * 3.2 + i * 0.35) * Math.cos(t * 1.4 - i * 0.2);
+                        const barH = Math.max(12, Math.abs(wave) * (h * 0.55));
+                        ctx.fillStyle = i % 2 === 0 ? c1 : c2;
+                        ctx.globalAlpha = 0.85;
+                        ctx.fillRect(startX + i * barW, h / 2 - barH / 2, barW - 4, barH);
+                    }
+                } else {
+                    // Quantum Particle Lattice
+                    const count = 28;
+                    ctx.strokeStyle = c1;
+                    ctx.fillStyle = c2;
+                    for (let i = 0; i < count; i++) {
+                        const px = (w / 2) + Math.sin(t * 0.8 + i * 1.7) * (w * 0.36);
+                        const py = (h / 2) + Math.cos(t * 1.1 + i * 2.3) * (h * 0.34);
+                        ctx.globalAlpha = 0.75;
+                        ctx.beginPath();
+                        ctx.arc(px, py, 4 + (i % 4), 0, Math.PI * 2);
+                        ctx.fill();
+                        if (i > 0) {
+                            const prevX = (w / 2) + Math.sin(t * 0.8 + (i - 1) * 1.7) * (w * 0.36);
+                            const prevY = (h / 2) + Math.cos(t * 1.1 + (i - 1) * 2.3) * (h * 0.34);
+                            ctx.globalAlpha = 0.2;
+                            ctx.beginPath();
+                            ctx.moveTo(prevX, prevY);
+                            ctx.lineTo(px, py);
+                            ctx.stroke();
+                        }
+                    }
+                }
+
+                // Adaptive HUD Telemetry Overlay inside Video Frame (scales cleanly on small phones & 4K PCs)
+                const hudScale = Math.max(0.82, Math.min(1.25, w / 680));
+                const fontSize = Math.round(11 * hudScale);
+                const padX = Math.round(16 * hudScale);
+                const padY = Math.round(16 * hudScale);
+                ctx.globalAlpha = 0.72;
+                ctx.fillStyle = '#ffffff';
+                ctx.font = `600 ${fontSize}px Inter, monospace`;
+                ctx.fillText(
+                    `VYRO SYNTH // ${formatDuration(this.currentTime)} / ${formatDuration(this.duration)} // ${this.canvas ? this.canvas.width + 'x' + this.canvas.height : '4K'}`,
+                    padX,
+                    h - padY
+                );
+                ctx.restore();
+            },
+
+            startRenderLoop() {
+                const render = (now) => {
+                    if (this.isPlaying) {
+                        if (this.usingRealVideo) {
+                            this.currentTime = this.realVideo.currentTime || 0;
+                            if (this.realVideo.ended) {
+                                const auto = document.getElementById('autoplayToggle');
+                                if (auto && auto.checked && app.currentView === 'watch') {
+                                    this.playNextRecommended();
+                                } else {
+                                    this.realVideo.currentTime = 0;
+                                    this.realVideo.play().catch(() => {});
+                                }
+                            }
+                        } else {
+                            const dt = (now - this.lastTick) / 1000;
+                            if (dt > 0 && dt < 0.5) {
+                                this.currentTime += dt * this.playbackSpeed;
+                                if (this.currentTime >= this.duration) {
+                                    const auto = document.getElementById('autoplayToggle');
+                                    if (auto && auto.checked && app.currentView === 'watch') {
+                                        this.playNextRecommended();
+                                    } else {
+                                        this.currentTime = 0;
+                                    }
+                                }
+                            }
+                        }
+                        this.updateTimeLabels();
+                        this.syncAudioDrone();
+                    }
+                    this.lastTick = now;
+
+                    // Draw procedural frame on Main Canvas or Miniplayer
+                    if (this.currentVideo) {
+                        if (!this.usingRealVideo) {
+                            this.drawSynthFrame(this.ctx, this.logicalW, this.logicalH, this.currentTime, this.currentVideo);
+                        }
+                        if (this.miniMode) {
+                            if (this.usingRealVideo && this.realVideo.readyState >= 2) {
+                                this.miniCtx.drawImage(this.realVideo, 0, 0, this.miniW, this.miniH);
+                            } else {
+                                this.drawSynthFrame(this.miniCtx, this.miniW, this.miniH, this.currentTime, this.currentVideo);
+                            }
+                        }
+                    }
+
+                    // Draw Pulse View if active
+                    if (app.currentView === 'pulse') {
+                        app.renderPulseCanvas(now * 0.001);
+                    }
+
+                    this.rafId = requestAnimationFrame(render);
+                };
+                this.rafId = requestAnimationFrame(render);
+            }
+        };
+
+        /* ============================================================================
+           MAIN SINGLE-PAGE APPLICATION CONTROLLER
+           ============================================================================ */
+        const app = {
+            videos: [],
+            theme: 'dark',
+            currentView: 'home',
+            activeCategory: 'All',
+            sortBy: 'trending',
+            searchQuery: '',
+            likedIds: new Set(['vyro-101']),
+            dislikedIds: new Set(),
+            savedIds: new Set(['vyro-102', 'vyro-103']),
+            historyIds: ['vyro-101', 'vyro-103'],
+            subscribedCreators: new Set(['Kairo Systems', 'CosmoLab Institute']),
+            notifications: [
+                { id: 1, text: 'Kairo Systems uploaded: "Architecting a Zero-Latency Distributed Video Engine"', time: '2h ago', unread: true },
+                { id: 2, text: 'CosmoLab Institute went live on Vyro Pulse', time: '5h ago', unread: true },
+                { id: 3, text: 'Your channel telemetry report for October is ready in Studio', time: '1d ago', unread: false }
+            ],
+            pulseIndex: 0,
+            pulseAudio: false,
+            pulseAnimating: false,
+            splashDismissed: false,
+
+            init() {
+                this.runBootSplash();
+
+                // Initialize Saved Theme (Dark or Light)
+                const savedTheme = localStorage.getItem('vyro_theme') || 'dark';
+                this.applyTheme(savedTheme);
+
+                // Load persisted state and ensure all items have real HD video streams attached
+                const savedVideos = localStorage.getItem('vyro_videos_v2');
+                this.videos = savedVideos ? JSON.parse(savedVideos) : [...INITIAL_VIDEOS];
+
+                const heroArt = document.getElementById('heroPreviewArt');
+                if (heroArt && this.videos[0]) {
+                    heroArt.innerHTML = generateThumbnailSVG(this.videos[0]);
+                }
+
+                this.renderCategoryBar();
+                this.renderSidebarSubscriptions();
+                this.renderNotifications();
+                this.updateSavedBadge();
+                this.setupSearchListeners();
+                this.setupSidebarToggle();
+                this.setupPulseTouchSwipe();
+
+                player.init();
+                this.navigate('home');
+            },
+
+            /* Snappy 1.1-Second Boot Splash Sequence Controller */
+            runBootSplash() {
+                const bar = document.getElementById('splashProgressBar');
+                const pctLabel = document.getElementById('splashPercentText');
+                const statusLabel = document.getElementById('splashStatusText');
+                if (!bar || !pctLabel || !statusLabel) return;
+
+                const stages = [
+                    { pct: 30, msg: 'CALIBRATING RETINA HIDPI DISPLAY...' },
+                    { pct: 65, msg: 'CONNECTING REAL HD VIDEO STREAMS...' },
+                    { pct: 95, msg: 'LAUNCHING VYRO ENGINE...' },
+                    { pct: 100, msg: 'READY' }
+                ];
+
+                let currentPct = 0;
+                const interval = setInterval(() => {
+                    if (this.splashDismissed) {
+                        clearInterval(interval);
+                        return;
+                    }
+                    currentPct += 10;
+                    if (currentPct > 100) currentPct = 100;
+
+                    bar.style.width = `${currentPct}%`;
+                    pctLabel.textContent = `${currentPct}%`;
+
+                    const stage = stages.find(s => currentPct <= s.pct) || stages[stages.length - 1];
+                    statusLabel.textContent = stage.msg;
+
+                    if (currentPct >= 100) {
+                        clearInterval(interval);
+                        setTimeout(() => this.dismissSplash(), 120);
+                    }
+                }, 38);
+            },
+
+            dismissSplash() {
+                if (this.splashDismissed) return;
+                this.splashDismissed = true;
+                const splash = document.getElementById('vyroSplashScreen');
+                if (!splash) return;
+                splash.classList.add('splash-dismiss');
+                setTimeout(() => {
+                    splash.classList.add('hidden');
+                }, 420);
+            },
+
+            applyTheme(mode) {
+                this.theme = mode;
+                const root = document.documentElement;
+                const sunIcon = document.getElementById('themeSunIcon');
+                const moonIcon = document.getElementById('themeMoonIcon');
+                const metaTheme = document.getElementById('metaThemeColor');
+
+                if (mode === 'light') {
+                    root.classList.remove('dark');
+                    root.classList.add('light');
+                    if (sunIcon) sunIcon.classList.add('hidden');
+                    if (moonIcon) moonIcon.classList.remove('hidden');
+                    if (metaTheme) metaTheme.setAttribute('content', '#f8fafc');
+                } else {
+                    root.classList.remove('light');
+                    root.classList.add('dark');
+                    if (sunIcon) sunIcon.classList.remove('hidden');
+                    if (moonIcon) moonIcon.classList.add('hidden');
+                    if (metaTheme) metaTheme.setAttribute('content', '#07080c');
+                }
+                try {
+                    localStorage.setItem('vyro_theme', mode);
+                } catch (e) {}
+
+                if (this.videos && this.videos.length > 0) {
+                    this.renderCategoryBar();
+                    if (this.currentView === 'watch') {
+                        this.updateWatchEngagementButtons();
+                    }
+                }
+            },
+
+            toggleTheme() {
+                const next = this.theme === 'dark' ? 'light' : 'dark';
+                this.applyTheme(next);
+                this.showToast(`Switched to ${next === 'light' ? 'Daylight' : 'Midnight Dark'} theme`);
+            },
+
+            saveCatalog() {
+                try {
+                    const clean = this.videos.map(v => ({ ...v, blobUrl: undefined }));
+                    localStorage.setItem('vyro_videos_v2', JSON.stringify(clean));
+                } catch (e) {}
+            },
+
+            setupSidebarToggle() {
+                const btn = document.getElementById('sidebarToggleBtn');
+                const sidebar = document.getElementById('sidebar');
+                const backdrop = document.getElementById('sidebarBackdrop');
+
+                btn.addEventListener('click', () => {
+                    if (window.innerWidth < 768) {
+                        const isHidden = sidebar.classList.contains('hidden');
+                        if (isHidden) {
+                            sidebar.classList.remove('hidden');
+                            sidebar.classList.add('fixed', 'inset-y-16', 'left-0', 'shadow-2xl');
+                            backdrop.classList.remove('hidden');
+                        } else {
+                            this.closeMobileSidebar();
+                        }
+                    } else {
+                        sidebar.classList.toggle('w-60');
+                        sidebar.classList.toggle('w-20');
+                        document.querySelectorAll('.nav-label, .nav-badge, .nav-section-title, #sidebarSubsContainer, #sidebarFooter').forEach(el => {
+                            el.classList.toggle('hidden');
+                        });
+                        setTimeout(() => player.resizeCanvas(), 220);
+                    }
+                });
+            },
+
+            closeMobileSidebar() {
+                const sidebar = document.getElementById('sidebar');
+                const backdrop = document.getElementById('sidebarBackdrop');
+                if (window.innerWidth < 768) {
+                    sidebar.classList.add('hidden');
+                    sidebar.classList.remove('fixed', 'inset-y-16', 'left-0', 'shadow-2xl');
+                    backdrop.classList.add('hidden');
+                }
+            },
+
+            setupPulseTouchSwipe() {
+                const wrapper = document.getElementById('pulseCardWrapper');
+                const viewport = document.getElementById('pulseViewport');
+                const feedback = document.getElementById('pulseSwipeFeedback');
+                const feedbackText = document.getElementById('pulseSwipeFeedbackText');
+                if (!wrapper || !viewport) return;
+
+                let isDragging = false;
+                let startY = 0;
+                let deltaY = 0;
+                let wheelCooldown = false;
+                let lastPulseTap = 0;
+
+                // Double-tap anywhere on Pulse card to spawn Heart Burst & Like
+                wrapper.addEventListener('click', (e) => {
+                    if (e.target.closest('button')) return;
+                    const now = performance.now();
+                    if (now - lastPulseTap < 300) {
+                        const rect = wrapper.getBoundingClientRect();
+                        this.spawnPulseHeart(e.clientX - rect.left, e.clientY - rect.top);
+                        this.likePulse();
+                        lastPulseTap = 0;
+                    } else {
+                        lastPulseTap = now;
+                    }
+                });
+
+                const onStart = (clientY) => {
+                    if (this.pulseAnimating) return;
+                    isDragging = true;
+                    startY = clientY;
+                    deltaY = 0;
+                    wrapper.style.transition = 'none';
+                };
+
+                const onMove = (clientY) => {
+                    if (!isDragging || this.pulseAnimating) return;
+                    deltaY = clientY - startY;
+                    const damped = deltaY * 0.58;
+                    const scale = Math.max(0.92, 1 - Math.abs(deltaY) / 1400);
+                    wrapper.style.transform = `translateY(${damped}px) scale(${scale})`;
+
+                    if (Math.abs(deltaY) > 42 && feedback && feedbackText) {
+                        feedback.classList.remove('opacity-0');
+                        feedbackText.textContent = deltaY < 0 ? 'Release for Next Pulse ↑' : 'Release for Previous Pulse ↓';
+                    } else if (feedback) {
+                        feedback.classList.add('opacity-0');
+                    }
+                };
+
+                const onEnd = () => {
+                    if (!isDragging) return;
+                    isDragging = false;
+                    if (feedback) feedback.classList.add('opacity-0');
+
+                    if (Math.abs(deltaY) > 55) {
+                        const dir = deltaY < 0 ? 1 : -1;
+                        this.animatePulseTransition(dir, deltaY * 0.58);
+                    } else {
+                        wrapper.style.transition = 'transform 0.25s cubic-bezier(0.16, 1, 0.3, 1)';
+                        wrapper.style.transform = 'translateY(0px) scale(1)';
+                    }
+                };
+
+                // Mobile Touch Gestures
+                wrapper.addEventListener('touchstart', (e) => {
+                    if (e.touches && e.touches[0]) onStart(e.touches[0].clientY);
+                }, { passive: true });
+
+                wrapper.addEventListener('touchmove', (e) => {
+                    if (e.touches && e.touches[0]) onMove(e.touches[0].clientY);
+                }, { passive: true });
+
+                wrapper.addEventListener('touchend', () => onEnd(), { passive: true });
+
+                // Desktop Mouse Drag Gestures
+                wrapper.addEventListener('mousedown', (e) => {
+                    if (e.target.closest('button')) return;
+                    onStart(e.clientY);
+                });
+
+                window.addEventListener('mousemove', (e) => {
+                    if (isDragging) onMove(e.clientY);
+                });
+
+                window.addEventListener('mouseup', () => {
+                    if (isDragging) onEnd();
+                });
+
+                // Mouse Wheel / Trackpad Vertical Swipe inside Pulse Viewport
+                viewport.addEventListener('wheel', (e) => {
+                    e.preventDefault();
+                    if (wheelCooldown || this.pulseAnimating || Math.abs(e.deltaY) < 18) return;
+                    wheelCooldown = true;
+                    this.animatePulseTransition(e.deltaY > 0 ? 1 : -1);
+                    setTimeout(() => { wheelCooldown = false; }, 420);
+                }, { passive: false });
+
+                // Keyboard Up / Down Arrow Navigation when in Pulse View
+                window.addEventListener('keydown', (e) => {
+                    if (this.currentView !== 'pulse') return;
+                    if (['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName)) return;
+                    if (e.code === 'ArrowDown') {
+                        e.preventDefault();
+                        this.animatePulseTransition(1);
+                    } else if (e.code === 'ArrowUp') {
+                        e.preventDefault();
+                        this.animatePulseTransition(-1);
+                    }
+                });
+            },
+
+            spawnPulseHeart(x, y) {
+                const container = document.getElementById('pulseHeartContainer');
+                if (!container) return;
+                const heart = document.createElement('div');
+                heart.className = 'pulse-heart-burst absolute pointer-events-none text-vyro-rose drop-shadow-2xl';
+                heart.style.left = `${x - 36}px`;
+                heart.style.top = `${y - 36}px`;
+                heart.innerHTML = `
+                    <svg class="w-20 h-20" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                    </svg>
+                `;
+                container.appendChild(heart);
+                setTimeout(() => heart.remove(), 680);
+            },
+
+            /* Smooth Vertical Slide-Out / Slide-In Card Transition for Vyro Pulse */
+            animatePulseTransition(dir, currentOffset = 0) {
+                if (this.pulseAnimating || this.videos.length === 0) return;
+                const wrapper = document.getElementById('pulseCardWrapper');
+                if (!wrapper) {
+                    this.stepPulse(dir);
+                    return;
+                }
+
+                this.pulseAnimating = true;
+                const exitY = dir > 0 ? -420 : 420;
+                const enterY = dir > 0 ? 420 : -420;
+
+                wrapper.style.transition = 'transform 0.22s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.22s ease';
+                wrapper.style.transform = `translateY(${exitY}px) scale(0.92)`;
+                wrapper.style.opacity = '0';
+
+                setTimeout(() => {
+                    this.stepPulse(dir);
+                    wrapper.style.transition = 'none';
+                    wrapper.style.transform = `translateY(${enterY}px) scale(0.92)`;
+                    wrapper.style.opacity = '0';
+
+                    requestAnimationFrame(() => {
+                        requestAnimationFrame(() => {
+                            wrapper.style.transition = 'transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.26s ease';
+                            wrapper.style.transform = 'translateY(0px) scale(1)';
+                            wrapper.style.opacity = '1';
+                            setTimeout(() => {
+                                this.pulseAnimating = false;
+                            }, 280);
+                        });
+                    });
+                }, 210);
+            },
+
+            openCurrentPulseInWatch() {
+                const v = this.videos[this.pulseIndex] || this.videos[0];
+                if (v) this.watchVideo(v.id);
+            },
+
+            setupSearchListeners() {
+                const input = document.getElementById('searchInput');
+                const clearBtn = document.getElementById('clearSearchBtn');
+                const dropdown = document.getElementById('searchDropdown');
+                const searchBtn = document.getElementById('searchBtn');
+
+                input.addEventListener('input', (e) => {
+                    const q = e.target.value.trim();
+                    this.searchQuery = q;
+                    clearBtn.classList.toggle('hidden', q.length === 0);
+
+                    if (q.length > 0) {
+                        const matches = this.videos.filter(v =>
+                            v.title.toLowerCase().includes(q.toLowerCase()) ||
+                            v.creator.toLowerCase().includes(q.toLowerCase()) ||
+                            v.category.toLowerCase().includes(q.toLowerCase())
+                        ).slice(0, 5);
+
+                        if (matches.length > 0) {
+                            dropdown.innerHTML = matches.map(m => `
+                                <button onclick="app.watchVideo('${m.id}'); document.getElementById('searchDropdown').classList.add('hidden');"
+                                    class="w-full px-4 py-2.5 text-left hover:bg-vyro-800 flex items-center justify-between gap-3 transition-colors">
+                                    <div class="flex items-center gap-2.5 min-w-0">
+                                        <svg class="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><rect x="3" y="4" width="18" height="16" rx="2"/></svg>
+                                        <span class="text-xs font-medium text-gray-200 truncate">${m.title}</span>
+                                    </div>
+                                    <span class="text-[10px] text-vyro-cyan font-semibold flex-shrink-0">${m.creator}</span>
+                                </button>
+                            `).join('');
+                            dropdown.classList.remove('hidden');
+                        } else {
+                            dropdown.classList.add('hidden');
+                        }
+                    } else {
+                        dropdown.classList.add('hidden');
+                    }
+
+                    if (this.currentView === 'home') {
+                        this.renderVideoGrid();
+                    }
+                });
+
+                clearBtn.addEventListener('click', () => {
+                    input.value = '';
+                    this.searchQuery = '';
+                    clearBtn.classList.add('hidden');
+                    dropdown.classList.add('hidden');
+                    this.renderVideoGrid();
+                });
+
+                searchBtn.addEventListener('click', () => {
+                    dropdown.classList.add('hidden');
+                    if (this.currentView !== 'home') this.navigate('home');
+                    this.renderVideoGrid();
+                });
+
+                document.addEventListener('click', (e) => {
+                    if (!e.target.closest('#searchInput') && !e.target.closest('#searchDropdown')) {
+                        dropdown.classList.add('hidden');
+                    }
+                    if (!e.target.closest('#notifBtn') && !e.target.closest('#notifDropdown')) {
+                        document.getElementById('notifDropdown').classList.add('hidden');
+                    }
+                });
+            },
+
+            navigate(view, keepMini = false) {
+                if (this.currentView === 'watch' && view !== 'watch' && !keepMini && player.isPlaying) {
+                    player.pause();
+                }
+
+                this.closeMobileSidebar();
+                this.currentView = view;
+
+                // Highlight desktop sidebar active nav item
+                document.querySelectorAll('.nav-item').forEach(btn => {
+                    const isMatch = btn.getAttribute('data-nav') === view;
+                    btn.className = `nav-item w-full flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all ${
+                        isMatch ? 'bg-vyro-accent/15 text-vyro-accent border border-vyro-accent/30' : 'text-gray-300 hover:bg-vyro-900 hover:text-white'
+                    }`;
+                });
+
+                // Highlight mobile bottom nav item
+                document.querySelectorAll('.mob-nav-item').forEach(btn => {
+                    const isMatch = btn.getAttribute('data-mob-nav') === view;
+                    btn.className = `mob-nav-item flex flex-col items-center gap-0.5 px-3 py-1 rounded-xl transition-colors ${
+                        isMatch ? 'text-vyro-accent font-bold' : 'text-gray-400 hover:text-white'
+                    }`;
+                });
+
+                // Hide all sections
+                ['home', 'watch', 'pulse', 'studio'].forEach(sec => {
+                    document.getElementById(`view-${sec}`).classList.add('hidden');
+                });
+
+                const banner = document.getElementById('feedBanner');
+                const bannerTitle = document.getElementById('feedBannerTitle');
+                const bannerSub = document.getElementById('feedBannerSub');
+                const bannerActions = document.getElementById('feedBannerActions');
+                const heroSpotlight = document.getElementById('heroSpotlight');
+                bannerActions.innerHTML = '';
+
+                const pulseVid = document.getElementById('pulseRealVideo');
+                if (pulseVid && view !== 'pulse') {
+                    pulseVid.pause();
+                }
+
+                if (['home', 'subscriptions', 'history', 'watchlater', 'liked'].includes(view)) {
+                    document.getElementById('view-home').classList.remove('hidden');
+
+                    if (view === 'home') {
+                        banner.classList.add('hidden');
+                        if (heroSpotlight) heroSpotlight.classList.remove('hidden');
+                    } else {
+                        banner.classList.remove('hidden');
+                        if (heroSpotlight) heroSpotlight.classList.add('hidden');
+                        if (view === 'subscriptions') {
+                            bannerTitle.textContent = 'Subscribed Channels';
+                            bannerSub.textContent = `Latest streams from ${this.subscribedCreators.size} creators you follow`;
+                        } else if (view === 'history') {
+                            bannerTitle.textContent = 'Watch History';
+                            bannerSub.textContent = 'Recently streamed sessions on this device';
+                            bannerActions.innerHTML = `<button onclick="app.clearHistory()" class="px-3.5 py-2 rounded-xl bg-vyro-900 hover:bg-vyro-700 border border-vyro-700 text-xs font-semibold text-gray-200">Clear History</button>`;
+                        } else if (view === 'watchlater') {
+                            bannerTitle.textContent = 'Saved Queue';
+                            bannerSub.textContent = 'Bookmarked streams ready for offline-grade playback';
+                        } else if (view === 'liked') {
+                            bannerTitle.textContent = 'Liked Streams';
+                            bannerSub.textContent = 'Videos you endorsed across the Vyro network';
+                        }
+                    }
+                    this.renderVideoGrid();
+                } else if (view === 'watch') {
+                    document.getElementById('view-watch').classList.remove('hidden');
+                    requestAnimationFrame(() => player.resizeCanvas());
+                } else if (view === 'pulse') {
+                    document.getElementById('view-pulse').classList.remove('hidden');
+                    this.updatePulseMetadata();
+                } else if (view === 'studio') {
+                    document.getElementById('view-studio').classList.remove('hidden');
+                    this.renderStudio();
+                }
+
+                document.getElementById('mainContainer').scrollTo({ top: 0, behavior: 'smooth' });
+            },
+
+            renderCategoryBar() {
+                const bar = document.getElementById('categoryBar');
+                bar.innerHTML = CATEGORIES.map(cat => {
+                    const active = this.activeCategory === cat;
+                    return `
+                        <button onclick="app.setCategory('${cat}')"
+                            class="px-3.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
+                                active
+                                    ? 'keep-white bg-vyro-accent text-white shadow-sm shadow-vyro-accent/25'
+                                    : 'bg-vyro-900 hover:bg-vyro-800 text-gray-300 border border-vyro-800'
+                            }">
+                            ${cat}
+                        </button>
+                    `;
+                }).join('');
+            },
+
+            setCategory(cat) {
+                this.activeCategory = cat;
+                this.renderCategoryBar();
+                this.renderVideoGrid();
+            },
+
+            setSort(sortType) {
+                this.sortBy = sortType;
+                this.renderVideoGrid();
+            },
+
+            getFilteredVideos() {
+                let list = [...this.videos];
+
+                // View-level filtering
+                if (this.currentView === 'subscriptions') {
+                    list = list.filter(v => this.subscribedCreators.has(v.creator));
+                } else if (this.currentView === 'history') {
+                    list = this.historyIds.map(id => this.videos.find(v => v.id === id)).filter(Boolean);
+                } else if (this.currentView === 'watchlater') {
+                    list = list.filter(v => this.savedIds.has(v.id));
+                } else if (this.currentView === 'liked') {
+                    list = list.filter(v => this.likedIds.has(v.id));
+                }
+
+                // Category filter
+                if (this.activeCategory !== 'All') {
+                    list = list.filter(v => v.category === this.activeCategory);
+                }
+
+                // Search query filter
+                if (this.searchQuery) {
+                    const q = this.searchQuery.toLowerCase();
+                    list = list.filter(v =>
+                        v.title.toLowerCase().includes(q) ||
+                        v.creator.toLowerCase().includes(q) ||
+                        v.category.toLowerCase().includes(q)
+                    );
+                }
+
+                // Sorting
+                if (this.currentView !== 'history') {
+                    if (this.sortBy === 'views') {
+                        list.sort((a, b) => b.views - a.views);
+                    } else if (this.sortBy === 'newest') {
+                        list.sort((a, b) => b.timestamp - a.timestamp);
+                    }
+                }
+
+                return list;
+            },
+
+            renderVideoGrid() {
+                const grid = document.getElementById('videoGrid');
+                const list = this.getFilteredVideos();
+
+                if (list.length === 0) {
+                    grid.innerHTML = `
+                        <div class="col-span-full py-16 text-center space-y-3 bg-vyro-900/50 border border-vyro-800 rounded-3xl">
+                            <svg class="w-12 h-12 text-gray-500 mx-auto" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                            </svg>
+                            <h3 class="text-base font-bold text-white">No streams match this filter</h3>
+                            <p class="text-xs text-gray-400">Try resetting your category filter or search query.</p>
+                            <button onclick="app.setCategory('All')" class="keep-white px-4 py-2 rounded-xl bg-vyro-accent text-xs font-semibold text-white">Reset Filters</button>
+                        </div>
+                    `;
+                    return;
+                }
+
+                grid.innerHTML = list.map(video => {
+                    const isSaved = this.savedIds.has(video.id);
+                    return `
+                        <article class="vyro-card-lift group flex flex-col cursor-pointer" onclick="app.watchVideo('${video.id}')">
+                            <!-- Thumbnail Container -->
+                            <div class="keep-white relative aspect-video rounded-2xl overflow-hidden bg-vyro-900 border border-vyro-800/90 group-hover:border-vyro-accent/60 transition-all shadow-lg">
+                                ${generateThumbnailSVG(video)}
+                                
+                                <!-- Center Play Hover Pill -->
+                                <div class="absolute inset-0 bg-black/25 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                    <div class="w-11 h-11 rounded-full bg-vyro-accent/90 text-white flex items-center justify-center shadow-lg transform scale-90 group-hover:scale-100 transition-transform">
+                                        <svg class="w-5 h-5 translate-x-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                                    </div>
+                                </div>
+
+                                <!-- Duration Badge -->
+                                <span class="absolute bottom-2.5 right-2.5 px-2 py-0.5 rounded-md bg-black/85 text-[11px] font-mono font-semibold text-gray-100">
+                                    ${formatDuration(video.duration)}
+                                </span>
+
+                                <!-- Quick Watch Later Hover Button -->
+                                <button onclick="event.stopPropagation(); app.toggleSaveById('${video.id}')" title="Save to Queue"
+                                    class="absolute top-2.5 right-2.5 p-2 rounded-xl bg-black/75 hover:bg-vyro-accent text-white opacity-100 sm:opacity-0 group-hover:opacity-100 transition-all">
+                                    <svg class="w-4 h-4" fill="${isSaved ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/>
+                                    </svg>
+                                </button>
+                            </div>
+
+                            <!-- Card Metadata -->
+                            <div class="flex gap-3 pt-3.5 px-0.5">
+                                <div class="keep-white w-9 h-9 rounded-xl flex items-center justify-center font-bold text-xs text-white flex-shrink-0 mt-0.5 shadow"
+                                     style="background-color: ${video.creatorColor || '#6366f1'}">
+                                    ${video.creatorInitials}
+                                </div>
+                                <div class="min-w-0 flex-1">
+                                    <h3 class="text-sm font-bold text-gray-100 group-hover:text-vyro-accent transition-colors line-clamp-2 leading-snug">
+                                        ${video.title}
+                                    </h3>
+                                    <div class="mt-1 flex items-center gap-1 text-xs text-gray-400">
+                                        <span class="truncate hover:text-gray-200">${video.creator}</span>
+                                        <svg class="w-3.5 h-3.5 text-vyro-cyan flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
+                                            <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                        </svg>
+                                    </div>
+                                    <div class="text-[11px] text-gray-500 mt-0.5">
+                                        ${formatViews(video.views)} views &bull; ${video.uploadedAt}
+                                    </div>
+                                </div>
+                            </div>
+                        </article>
+                    `;
+                }).join('');
+            },
+
+            watchVideo(id) {
+                const video = this.videos.find(v => v.id === id);
+                if (!video) return;
+
+                // Close miniplayer if open
+                player.miniMode = false;
+                document.getElementById('miniPlayer').classList.add('hidden');
+
+                // Increment views & update watch history
+                video.views += 1;
+                this.historyIds = [id, ...this.historyIds.filter(hid => hid !== id)];
+
+                // Populate Watch UI
+                document.getElementById('watchTitle').textContent = video.title;
+                const avatar = document.getElementById('watchCreatorAvatar');
+                avatar.textContent = video.creatorInitials;
+                avatar.style.backgroundColor = video.creatorColor || '#6366f1';
+
+                document.getElementById('watchCreatorName').textContent = video.creator;
+                document.getElementById('watchCreatorSubs').textContent = `${video.subscribers} subscribers`;
+                document.getElementById('watchViewsDate').textContent = `${video.views.toLocaleString()} views • ${video.uploadedAt}`;
+                document.getElementById('watchCategoryTag').textContent = video.category;
+                document.getElementById('watchDescription').textContent = video.description;
+
+                // Render Interactive Chapters
+                const chaptersEl = document.getElementById('watchChapters');
+                if (video.chapters && video.chapters.length > 0) {
+                    chaptersEl.innerHTML = video.chapters.map(ch => `
+                        <button onclick="player.seekTo(${ch.time})"
+                            class="px-3 py-1.5 rounded-xl bg-vyro-800 hover:bg-vyro-accent/20 border border-vyro-700 hover:border-vyro-accent text-xs font-medium text-gray-200 whitespace-nowrap transition-all">
+                            ${ch.title}
+                        </button>
+                    `).join('');
+                } else {
+                    chaptersEl.innerHTML = `<span class="text-xs text-gray-500">Continuous stream</span>`;
+                }
+
+                this.NavigateAndLoadWatch(video);
+            },
+
+            NavigateAndLoadWatch(video) {
+                this.navigate('watch');
+                player.loadVideo(video);
+                this.updateWatchEngagementButtons();
+                this.renderComments();
+                this.renderRelatedVideos();
+            },
+
+            restoreFromMiniPlayer() {
+                if (!player.currentVideo) return;
+                player.miniMode = false;
+                document.getElementById('miniPlayer').classList.add('hidden');
+                this.navigate('watch');
+            },
+
+            updateWatchEngagementButtons() {
+                const video = player.currentVideo;
+                if (!video) return;
+
+                // Subscribe button
+                const isSub = this.subscribedCreators.has(video.creator);
+                const subBtn = document.getElementById('watchSubBtn');
+                if (isSub) {
+                    subBtn.textContent = 'Subscribed';
+                    subBtn.className = 'ml-2 sm:ml-3 px-3.5 sm:px-4 py-2 rounded-xl font-semibold text-xs sm:text-sm bg-vyro-800 text-gray-200 hover:bg-vyro-700 border border-vyro-700 transition-all';
+                } else {
+                    subBtn.textContent = 'Subscribe';
+                    subBtn.className = 'keep-white ml-2 sm:ml-3 px-3.5 sm:px-4 py-2 rounded-xl font-semibold text-xs sm:text-sm bg-vyro-accent hover:bg-vyro-accentHover text-white shadow-md shadow-vyro-accent/25 transition-all';
+                }
+
+                // Like / Dislike
+                const isLiked = this.likedIds.has(video.id);
+                const isDisliked = this.dislikedIds.has(video.id);
+                document.getElementById('watchLikesCount').textContent = formatViews(video.likes);
+                document.getElementById('watchLikeBtn').className = `flex items-center gap-2 px-3.5 py-2 text-xs sm:text-sm font-semibold transition-colors ${
+                    isLiked ? 'bg-vyro-accent/20 text-vyro-accent' : 'text-gray-200 hover:bg-vyro-800'
+                }`;
+                document.getElementById('watchDislikeBtn').className = `px-3 py-2 transition-colors ${
+                    isDisliked ? 'bg-vyro-rose/20 text-vyro-rose' : 'text-gray-400 hover:text-white hover:bg-vyro-800'
+                }`;
+
+                // Save button
+                const isSaved = this.savedIds.has(video.id);
+                document.getElementById('watchSaveLabel').textContent = isSaved ? 'Saved' : 'Save';
+                document.getElementById('watchSaveBtn').className = `flex items-center gap-2 px-3.5 py-2 rounded-xl border text-xs sm:text-sm font-medium transition-colors ${
+                    isSaved ? 'bg-vyro-accent/15 border-vyro-accent text-vyro-accent' : 'bg-vyro-900 hover:bg-vyro-800 border-vyro-800 text-gray-200'
+                }`;
+            },
+
+            toggleSubscribeCurrent() {
+                const video = player.currentVideo;
+                if (!video) return;
+                if (this.subscribedCreators.has(video.creator)) {
+                    this.subscribedCreators.delete(video.creator);
+                    this.showToast(`Unsubscribed from ${video.creator}`);
+                } else {
+                    this.subscribedCreators.add(video.creator);
+                    this.showToast(`Subscribed to ${video.creator}`);
+                }
+                this.updateWatchEngagementButtons();
+                this.renderSidebarSubscriptions();
+            },
+
+            toggleLikeCurrent() {
+                const video = player.currentVideo;
+                if (!video) return;
+                if (this.likedIds.has(video.id)) {
+                    this.likedIds.delete(video.id);
+                    video.likes = Math.max(0, video.likes - 1);
+                } else {
+                    this.likedIds.add(video.id);
+                    video.likes += 1;
+                    this.dislikedIds.delete(video.id);
+                }
+                this.updateWatchEngagementButtons();
+            },
+
+            toggleDislikeCurrent() {
+                const video = player.currentVideo;
+                if (!video) return;
+                if (this.dislikedIds.has(video.id)) {
+                    this.dislikedIds.delete(video.id);
+                } else {
+                    this.dislikedIds.add(video.id);
+                    if (this.likedIds.has(video.id)) {
+                        this.likedIds.delete(video.id);
+                        video.likes = Math.max(0, video.likes - 1);
+                    }
+                }
+                this.updateWatchEngagementButtons();
+            },
+
+            toggleSaveCurrent() {
+                if (!player.currentVideo) return;
+                this.toggleSaveById(player.currentVideo.id);
+                this.updateWatchEngagementButtons();
+            },
+
+            toggleSaveById(id) {
+                if (this.savedIds.has(id)) {
+                    this.savedIds.delete(id);
+                    this.showToast('Removed from Saved Queue');
+                } else {
+                    this.savedIds.add(id);
+                    this.showToast('Added to Saved Queue');
+                }
+                this.updateSavedBadge();
+                if (this.currentView !== 'watch') {
+                    this.renderVideoGrid();
+                }
+            },
+
+            updateSavedBadge() {
+                document.getElementById('savedCountBadge').textContent = this.savedIds.size;
+            },
+
+            shareCurrentVideo() {
+                if (!player.currentVideo) return;
+                const shareUrl = `https://vyro.stream/watch?v=${player.currentVideo.id}`;
+                const tempInput = document.createElement('textarea');
+                tempInput.value = shareUrl;
+                document.body.appendChild(tempInput);
+                tempInput.select();
+                document.execCommand('copy');
+                document.body.removeChild(tempInput);
+                this.showToast(`Stream link copied: ${shareUrl}`);
+            },
+
+            renderComments() {
+                const video = player.currentVideo;
+                if (!video) return;
+                const list = video.comments || [];
+                document.getElementById('commentCountLabel').textContent = list.length;
+
+                const container = document.getElementById('commentsList');
+                container.innerHTML = list.map(c => {
+                    // Convert timestamps like 01:30 into clickable seek links
+                    const parsedText = c.text.replace(/(\d{1,2}):(\d{2})/g, (match, m, s) => {
+                        const sec = parseInt(m, 10) * 60 + parseInt(s, 10);
+                        return `<button onclick="player.seekTo(${sec})" class="text-vyro-cyan font-mono hover:underline">${match}</button>`;
+                    });
+
+                    return `
+                        <div class="flex gap-3 p-3.5 rounded-2xl bg-vyro-900/50 border border-vyro-800/60">
+                            <div class="keep-white w-8 h-8 rounded-xl bg-vyro-800 border border-vyro-700 flex items-center justify-center text-xs font-bold text-vyro-cyan flex-shrink-0">
+                                ${c.initials}
+                            </div>
+                            <div class="space-y-1 flex-1 min-w-0">
+                                <div class="flex items-center gap-2">
+                                    <span class="text-xs font-bold text-white">${c.user}</span>
+                                    <span class="text-[10px] text-gray-500">${c.time}</span>
+                                </div>
+                                <p class="text-xs sm:text-sm text-gray-300 leading-relaxed">${parsedText}</p>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            },
+
+            postComment(e) {
+                e.preventDefault();
+                const input = document.getElementById('commentInput');
+                const text = input.value.trim();
+                if (!text || !player.currentVideo) return;
+
+                if (!player.currentVideo.comments) player.currentVideo.comments = [];
+                player.currentVideo.comments.unshift({
+                    user: 'Aryan Kapoor',
+                    initials: 'AK',
+                    time: 'Just now',
+                    text: text
+                });
+
+                input.value = '';
+                this.renderComments();
+                this.saveCatalog();
+                this.showToast('Comment published');
+            },
+
+            renderRelatedVideos() {
+                const current = player.currentVideo;
+                if (!current) return;
+                const related = this.videos.filter(v => v.id !== current.id);
+                const container = document.getElementById('relatedList');
+
+                container.innerHTML = related.map(v => `
+                    <div onclick="app.watchVideo('${v.id}')" class="group flex gap-3 p-2 rounded-2xl hover:bg-vyro-900 transition-colors cursor-pointer">
+                        <div class="keep-white relative w-40 aspect-video rounded-xl overflow-hidden bg-vyro-900 border border-vyro-800 flex-shrink-0">
+                            ${generateThumbnailSVG(v)}
+                            <span class="absolute bottom-1.5 right-1.5 px-1.5 py-0.5 rounded bg-black/85 text-[10px] font-mono text-white">
+                                ${formatDuration(v.duration)}
+                            </span>
+                        </div>
+                        <div class="flex-1 min-w-0 py-0.5">
+                            <h4 class="text-xs font-bold text-gray-100 group-hover:text-vyro-accent transition-colors line-clamp-2 leading-snug">
+                                ${v.title}
+                            </h4>
+                            <p class="text-[11px] text-gray-400 mt-1 truncate">${v.creator}</p>
+                            <p class="text-[10px] text-gray-500 mt-0.5">${formatViews(v.views)} views &bull; ${v.uploadedAt}</p>
+                        </div>
+                    </div>
+                `).join('');
+            },
+
+            renderSidebarSubscriptions() {
+                const container = document.getElementById('sidebarSubsList');
+                const subs = Array.from(this.subscribedCreators);
+                if (subs.length === 0) {
+                    container.innerHTML = `<p class="px-3.5 text-xs text-gray-500">No channels followed</p>`;
+                    return;
+                }
+                container.innerHTML = subs.map(creatorName => {
+                    const sampleVideo = this.videos.find(v => v.creator === creatorName);
+                    const initials = sampleVideo ? sampleVideo.creatorInitials : creatorName.slice(0, 2).toUpperCase();
+                    const color = sampleVideo ? sampleVideo.creatorColor : '#6366f1';
+                    return `
+                        <button onclick="app.filterByCreator('${creatorName}')" class="w-full flex items-center gap-3 px-3.5 py-2 rounded-xl hover:bg-vyro-900 text-xs font-medium text-gray-300 hover:text-white transition-colors">
+                            <span class="keep-white w-6 h-6 rounded-lg flex items-center justify-center text-[10px] font-bold text-white flex-shrink-0" style="background-color: ${color}">
+                                ${initials}
+                            </span>
+                            <span class="truncate">${creatorName}</span>
+                            <span class="ml-auto w-1.5 h-1.5 rounded-full bg-vyro-cyan"></span>
+                        </button>
+                    `;
+                }).join('');
+            },
+
+            filterByCreator(creatorName) {
+                document.getElementById('searchInput').value = creatorName;
+                this.searchQuery = creatorName;
+                document.getElementById('clearSearchBtn').classList.remove('hidden');
+                this.navigate('home');
+            },
+
+            clearHistory() {
+                this.historyIds = [];
+                this.renderVideoGrid();
+                this.showToast('Watch history cleared');
+            },
+
+            /* Vyro Pulse (Shorts) Logic */
+            stepPulse(dir) {
+                this.pulseIndex = (this.pulseIndex + dir + this.videos.length) % this.videos.length;
+                this.updatePulseMetadata();
+            },
+
+            updatePulseMetadata() {
+                const v = this.videos[this.pulseIndex] || this.videos[0];
+                if (!v) return;
+                document.getElementById('pulseCreatorBadge').textContent = v.creatorInitials;
+                document.getElementById('pulseCreatorBadge').style.backgroundColor = v.creatorColor || '#6366f1';
+                document.getElementById('pulseCreator').textContent = v.creator;
+                document.getElementById('pulseTitle').textContent = v.title;
+                document.getElementById('pulseTag').textContent = `#${v.category.replace(/\s+/g, '')} • Double-tap to Like`;
+                document.getElementById('pulseLikesCount').textContent = formatViews(v.likes);
+
+                // Sync Real HD Video inside Pulse Viewport
+                const pulseVid = document.getElementById('pulseRealVideo');
+                if (pulseVid && v.videoUrl) {
+                    pulseVid.src = v.videoUrl;
+                    pulseVid.muted = !this.pulseAudio;
+                    pulseVid.classList.remove('hidden');
+                    pulseVid.play().catch(() => {
+                        pulseVid.classList.add('hidden');
+                    });
+                }
+
+                const counter = document.getElementById('pulseCounterBadge');
+                if (counter) {
+                    counter.textContent = `${this.pulseIndex + 1} / ${this.videos.length}`;
+                }
+
+                const rail = document.getElementById('pulseDotsRail');
+                if (rail) {
+                    rail.innerHTML = this.videos.map((item, idx) => `
+                        <button onclick="app.jumpToPulse(${idx})" title="${item.title}"
+                            class="w-2 rounded-full transition-all ${idx === this.pulseIndex ? 'h-6 bg-vyro-cyan' : 'h-2 bg-vyro-700 hover:bg-gray-400'}">
+                        </button>
+                    `).join('');
+                }
+            },
+
+            jumpToPulse(targetIdx) {
+                if (targetIdx === this.pulseIndex || this.pulseAnimating) return;
+                const dir = targetIdx > this.pulseIndex ? 1 : -1;
+                this.pulseIndex = (targetIdx - dir + this.videos.length) % this.videos.length;
+                this.animatePulseTransition(dir);
+            },
+
+            likePulse() {
+                const v = this.videos[this.pulseIndex];
+                if (!v) return;
+                v.likes += 1;
+                document.getElementById('pulseLikesCount').textContent = formatViews(v.likes);
+                this.showToast(`Liked Pulse from ${v.creator}`);
+            },
+
+            togglePulseAudio() {
+                this.pulseAudio = !this.pulseAudio;
+                document.getElementById('pulseAudioBadge').textContent = `Audio: ${this.pulseAudio ? 'ON' : 'OFF'}`;
+                const pulseVid = document.getElementById('pulseRealVideo');
+                if (pulseVid) {
+                    pulseVid.muted = !this.pulseAudio;
+                }
+                if (this.pulseAudio) {
+                    player.initWebAudio();
+                }
+            },
+
+            renderPulseCanvas(t) {
+                const pulseVid = document.getElementById('pulseRealVideo');
+                const bar = document.getElementById('pulseProgressBar');
+                if (pulseVid && !pulseVid.classList.contains('hidden') && pulseVid.duration) {
+                    const pct = (pulseVid.currentTime / pulseVid.duration) * 100;
+                    if (bar) bar.style.width = `${pct}%`;
+                } else if (bar) {
+                    bar.style.width = `${((t * 12) % 100)}%`;
+                }
+
+                const canvas = document.getElementById('pulseCanvas');
+                if (!canvas) return;
+                const ctx = canvas.getContext('2d');
+                const metrics = dpiManager.configureCanvas(canvas, ctx, 360, 640);
+
+                const v = this.videos[this.pulseIndex] || this.videos[0];
+                player.drawSynthFrame(ctx, metrics.w, metrics.h, t * 1.4, v);
+            },
+
+            /* Studio & Upload Modal Logic */
+            renderStudio() {
+                document.getElementById('studioVideoCount').textContent = this.videos.length;
+                const totalViews = this.videos.reduce((acc, v) => acc + v.views, 0);
+                document.getElementById('studioTotalViews').textContent = totalViews.toLocaleString();
+
+                const tbody = document.getElementById('studioTableBody');
+                tbody.innerHTML = this.videos.map(v => `
+                    <tr class="hover:bg-vyro-800/40 transition-colors">
+                        <td class="py-3.5 px-6">
+                            <div class="flex items-center gap-3">
+                                <div class="w-16 aspect-video rounded-lg overflow-hidden bg-vyro-950 border border-vyro-800 flex-shrink-0">
+                                    ${generateThumbnailSVG(v)}
+                                </div>
+                                <div class="min-w-0">
+                                    <p class="font-bold text-white text-xs sm:text-sm truncate max-w-xs sm:max-w-md">${v.title}</p>
+                                    <p class="text-[11px] text-gray-400">${v.creator} &bull; ${v.uploadedAt}</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="py-3.5 px-4">
+                            <span class="px-2.5 py-1 rounded-lg bg-vyro-800 text-xs font-medium text-vyro-cyan">${v.category}</span>
+                        </td>
+                        <td class="py-3.5 px-4 font-mono text-xs text-gray-200">${v.views.toLocaleString()}</td>
+                        <td class="py-3.5 px-4 font-mono text-xs text-gray-200">${v.likes.toLocaleString()}</td>
+                        <td class="py-3.5 px-6 text-right space-x-2">
+                            <button onclick="app.watchVideo('${v.id}')" class="keep-white px-3 py-1.5 rounded-lg bg-vyro-accent hover:bg-vyro-accentHover text-xs font-semibold text-white">Play</button>
+                            <button onclick="app.deleteVideo('${v.id}')" class="px-3 py-1.5 rounded-lg bg-vyro-rose/15 hover:bg-vyro-rose/30 text-xs font-semibold text-vyro-rose">Delete</button>
+                        </td>
+                    </tr>
+                `).join('');
+            },
+
+            deleteVideo(id) {
+                if (this.videos.length <= 1) {
+                    this.showToast('Cannot delete the last remaining catalog stream');
+                    return;
+                }
+                this.videos = this.videos.filter(v => v.id !== id);
+                this.saveCatalog();
+                this.renderStudio();
+                this.showToast('Video removed from catalog');
+            },
+
+            openUploadModal() {
+                document.getElementById('uploadModal').classList.remove('hidden');
+            },
+
+            closeUploadModal() {
+                document.getElementById('uploadModal').classList.add('hidden');
+            },
+
+            handlePublishVideo(e) {
+                e.preventDefault();
+                const title = document.getElementById('upTitle').value.trim();
+                const category = document.getElementById('upCategory').value;
+                const visualStyle = document.getElementById('upVisualStyle').value;
+                const desc = document.getElementById('upDesc').value.trim();
+                const fileInput = document.getElementById('upFile');
+
+                let blobUrl = null;
+                if (fileInput.files && fileInput.files[0]) {
+                    blobUrl = URL.createObjectURL(fileInput.files[0]);
+                }
+
+                const palette = {
+                    cyber: ['#6366f1', '#06b6d4'],
+                    nebula: ['#f43f5e', '#8b5cf6'],
+                    waveform: ['#06b6d4', '#10b981'],
+                    matrix: ['#10b981', '#f59e0b']
+                }[visualStyle] || ['#6366f1', '#06b6d4'];
+
+                const newVideo = {
+                    id: 'vyro-' + Date.now(),
+                    title,
+                    creator: 'Aryan Kapoor Studio',
+                    creatorInitials: 'AK',
+                    creatorColor: palette[0],
+                    subscribers: '128.4K',
+                    views: 1,
+                    likes: 1,
+                    uploadedAt: 'Just now',
+                    timestamp: Math.floor(Date.now() / 1000),
+                    duration: 180,
+                    category,
+                    visualStyle,
+                    accentHex: palette[0],
+                    secondaryHex: palette[1],
+                    description: desc,
+                    blobUrl,
+                    chapters: [
+                        { title: '00:00 Stream Initialization', time: 0 },
+                        { title: '01:00 Core Demonstration', time: 60 },
+                        { title: '02:00 Final Synthesis', time: 120 }
+                    ],
+                    comments: []
+                };
+
+                this.videos.unshift(newVideo);
+                this.saveCatalog();
+                this.closeUploadModal();
+                e.target.reset();
+
+                this.showToast('Stream published to Vyro Network');
+                this.watchVideo(newVideo.id);
+            },
+
+            /* Notifications & Toast Feedback */
+            toggleNotifications() {
+                document.getElementById('notifDropdown').classList.toggle('hidden');
+            },
+
+            renderNotifications() {
+                const list = document.getElementById('notifList');
+                const unreadCount = this.notifications.filter(n => n.unread).length;
+                document.getElementById('notifBadge').classList.toggle('hidden', unreadCount === 0);
+
+                list.innerHTML = this.notifications.map(n => `
+                    <div class="px-4 py-3 hover:bg-vyro-800/60 transition-colors flex items-start gap-3">
+                        <span class="w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${n.unread ? 'bg-vyro-cyan' : 'bg-gray-600'}"></span>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-xs text-gray-200 leading-snug">${n.text}</p>
+                            <span class="text-[10px] text-gray-500">${n.time}</span>
+                        </div>
+                    </div>
+                `).join('');
+            },
+
+            markNotificationsRead() {
+                this.notifications.forEach(n => n.unread = false);
+                this.renderNotifications();
+                this.showToast('All notifications marked as read');
+            },
+
+            showToast(message) {
+                const container = document.getElementById('toastContainer');
+                const toast = document.createElement('div');
+                toast.className = 'keep-white px-4 py-2.5 rounded-2xl bg-vyro-800/95 backdrop-blur-md border border-vyro-600 text-xs font-semibold text-white shadow-2xl flex items-center gap-2.5 transform translate-y-2 opacity-0 transition-all duration-200';
+                toast.innerHTML = `
+                    <span class="w-2 h-2 rounded-full bg-vyro-cyan"></span>
+                    <span>${message}</span>
+                `;
+                container.appendChild(toast);
+
+                requestAnimationFrame(() => {
+                    toast.classList.remove('translate-y-2', 'opacity-0');
+                });
+
+                setTimeout(() => {
+                    toast.classList.add('opacity-0', 'translate-y-2');
+                    setTimeout(() => toast.remove(), 220);
+                }, 2600);
+            }
+        };
+
+        window.addEventListener('DOMContentLoaded', () => {
+            app.init();
+        });
+    </script>
+</body>
+</html>
